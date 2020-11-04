@@ -1,6 +1,12 @@
-filtro: filtrobase.l
-	@flex filtrobase.l
-	@gcc lex.yy.c funcs.c
-	@./a.out < exemplo-utf8.bib > saida.html
-	@rm lex.yy.c
-	@rm a.out
+saida.html: lex.yy.c funcs.o 
+	gcc lex.yy.c funcs.o
+	./a.out < exemplo-utf8.bib > saida.html
+lex.yy.c: filtrobase.l
+	flex filtrobase.l
+funcs.o: funcs.c funcs.h
+	gcc -c funcs.c
+clean: 
+	rm a.out
+	rm lex.yy.c 
+	
+   
