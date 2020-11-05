@@ -11,18 +11,30 @@ char *str_to_lower (char *s) {
 }
 
 void ShowLStr (LStr *l) {
-  while ((*l) != NULL) {
-    printf ("Nome: %s\n", (*l)->nome);
-    l = &((*l)->prox);
-  }
+    while ((*l) != NULL && (*l)->prox != NULL) {
+        printf ("%s -> ", (*l)->nome);
+        l = &((*l)->prox);
+    }
+    if ((*l) != NULL) printf ("%s\n", (*l)->nome);
 }
 
 void acrescentaLStr (LStr *l, char *s) {
-  while ((*l) != NULL) l = &((*l)->prox);
-  
-  (*l) = malloc (sizeof (struct slist));
-  (*l)->nome = strdup (s);
-  (*l)->prox = NULL;
+    while ((*l) != NULL) l = &((*l)->prox);
+
+    (*l) = malloc (sizeof (struct slist));
+    (*l)->nome = strdup (s);
+    (*l)->prox = NULL;
+}
+
+void ShowProj (LProj *p) {
+    while ((*p) != NULL) {
+        printf ("Chave: %s\n", (*p)->chave);
+        printf ("Título: %s\n", (*p)->titulo);
+        printf ("Autores: ");
+        ShowLStr (&((*p)->autores));
+        printf ("\n");
+        p = &((*p)->prox);
+    }
 }
 
 void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores) {

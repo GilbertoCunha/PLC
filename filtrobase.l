@@ -12,7 +12,6 @@ char *chave;
 char *titulo;
 %}
 
-
 %x CATEGORIA CHAVE AUTORES AUTOR FIM TITULO
 %x DENTRO
 
@@ -22,20 +21,20 @@ LETRAS [a-zA-Z\,\.\ ]
 \@                                   { BEGIN CATEGORIA; }
 <CATEGORIA>[^\{]+                    { nome = strdup (yytext); acrescentaCat (&l, str_to_lower(yytext)); }
 <CATEGORIA>\{                        { BEGIN CHAVE; }
-<DENTRO>\n\ *\}                      { BEGIN INITIAL; }
+<DENTRO>\n\ *\}                      { ShowLStr (&a) ; BEGIN INITIAL; p = NULL; a = NULL; }
 
 <CHAVE>[^\,]+                        { chave = strdup (yytext); }
 <CHAVE>\,                            { BEGIN DENTRO; }
 
 <DENTRO>AUTOR\$                      { BEGIN AUTORES; }
-<AUTORES>\$.+?\$                     { acrescentaLStr (&a, yytext); }
+<AUTORES>\$[^$]+?\$                  { acrescentaLStr (&a, yytext+1); }
 <AUTORES>\}\,                        { BEGIN DENTRO; }
 
 <DENTRO>^\ *title\ *\=\ *            { BEGIN TITULO; }
-<TITULO>\"[^\"]+?\"\,                { printf ("%s\n", yytext); BEGIN DENTRO; }
-<TITULO>\{[^\}]+?\}\,                { printf ("%s\n", yytext); BEGIN DENTRO; }
+<TITULO>\"[^\"]+?\"\,                { titulo = strdup (yytext); BEGIN DENTRO; }
+<TITULO>\{[^\}]+?\}\,                { titulo = strdup (yytext); BEGIN DENTRO; }
 
-<*>(.|\n)                               { ; }
+<*>(.|\n)                            { ; }
 %%
 
 void ShowCat (LCat *l) {
