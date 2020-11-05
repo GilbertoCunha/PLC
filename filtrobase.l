@@ -5,40 +5,46 @@
 #include "funcs.h"
 
 LCat l = NULL;
-
+LProj p = NULL;
+LStr a = NULL;
+char *nome;
+char *chave;
+char *titulo;
 %}
 
 
 %x CATEGORIA CHAVE TITULO AUTORES AUTOR FIM
+%s DENTRO
+
+LETRAS [a-zA-Z\,\.\ ]
 
 %%
-\@                              { BEGIN CATEGORIA; }
-<CATEGORIA>[^\{]+               { acrescenta(&l, str_to_lower(yytext)); }
-<CATEGORIA>\{                   { BEGIN CHAVE; }
+\@                                   { BEGIN CATEGORIA; }
+<CATEGORIA>[^\{]+                    { acrescentaCat (&l, str_to_lower(yytext)); }
+<CATEGORIA>\{                        { BEGIN CHAVE; }
+<DENTRO>\n\ *\}                      { BEGIN INITIAL; }
 
-<CHAVE>[^\,]+                                  { ; }
-<CHAVE>\,                                      { BEGIN INITIAL; }
+<CHAVE>[^\,]+                        { chave = strdup (yytext); }
+<CHAVE>\,                            { BEGIN DENTRO; }
 
-<*>\ +author\ *\=\ *(\{|\")                    { BEGIN AUTORES; }
-<AUTORES>((\ +and\ +)*.+)+(\}\,|\"\,)          { printf("nome:%s \n",yytext); BEGIN INITIAL;}
+<DENTRO>\ +author\ *\=\ *(\{|\")     { BEGIN AUTORES; }
+<AUTORES>[^\n\}\"]+?and              { printf("nome:%s\n",yytext); }
+<AUTORES>[^\n]+(\}\,|\"\,)           { BEGIN DENTRO; }
 
+<DENTRO>\ +title\ *\=\ *(\{|\")      { BEGIN TITULO; }
+<TITULO>([^\}\,]|[^\"\,])+           { BEGIN DENTRO; }
 
-
-
-<*>\ +title\ *\=\ *(\{|\")      { BEGIN TITULO; }
-<TITULO>([^\}\,]|[^\"\,])+      { BEGIN INITIAL;}
-
-(.|\n)                  { ; }
+(.|\n)                               { ; }
 %%
 
 void ShowCat (LCat *l) {
-    printf ("<h> Contagem de categorias </h>\n");
-    printf ("<ol>\n");
+    printf ("\t\t<h> Contagem de categorias </h>\n");
+    printf ("\t\t<ol>\n");
     while (*l != NULL) {
-        printf("\t<li> Nome: %s | Num_ocorr: %d </li>\n", (*l)->nome, (*l)->num_ocorr);
+        printf("\t\t\t<li> Nome: %s | Num_ocorr: %d </li>\n", (*l)->nome, (*l)->num_ocorr);
         l = &((*l)->prox);
     }
-    printf ("</ol>\n");
+    printf ("\t\t</ol>\n");
 }
 
 int yywrap () {
