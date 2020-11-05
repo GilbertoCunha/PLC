@@ -21,7 +21,7 @@ LETRAS [a-zA-Z\,\.\ ]
 \@                                   { BEGIN CATEGORIA; }
 <CATEGORIA>[^\{]+                    { nome = strdup (yytext); acrescentaCat (&l, str_to_lower(yytext)); }
 <CATEGORIA>\{                        { BEGIN CHAVE; }
-<DENTRO>\n\ *\}                      { ShowLStr (&a) ; BEGIN INITIAL; p = NULL; a = NULL; }
+<DENTRO>\n\ *\}                      { ShowLStr (&a); BEGIN INITIAL; p = NULL; a = NULL; }
 
 <CHAVE>[^\,]+                        { chave = strdup (yytext); }
 <CHAVE>\,                            { BEGIN DENTRO; }
