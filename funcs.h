@@ -1,9 +1,13 @@
-typedef struct categoria {
-    char *nome;
-    int num_ocorr;
+typedef struct projeto {
     char *chave;
     char *titulo;
     char **autores;
+    struct projeto *prox;
+} *LProj;
+
+typedef struct categoria {
+    char *nome;
+    int num_ocorr;
     struct categoria *prox;
 } *LCat;
 

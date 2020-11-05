@@ -16,10 +16,10 @@ LCat l = NULL;
 <CATEGORIA>[^\{]+               { acrescenta(&l, str_to_lower(yytext)); }
 <CATEGORIA>\{                   { BEGIN CHAVE; }
 
-<CHAVE>[^\,]+                   { ; }
-<CHAVE>\,                       { BEGIN INITIAL; }
+<CHAVE>[^\,]+                                  { ; }
+<CHAVE>\,                                      { BEGIN INITIAL; }
 
-<*>\ +author\ *\=\ *(\{|\")                        { BEGIN AUTORES; }
+<*>\ +author\ *\=\ *(\{|\")                    { BEGIN AUTORES; }
 <AUTORES>((\ +and\ +)*.+)+(\}\,|\"\,)          { printf("nome:%s \n",yytext); BEGIN INITIAL;}
 
 
