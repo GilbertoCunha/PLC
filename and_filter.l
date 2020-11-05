@@ -3,14 +3,14 @@
 %}
 %option noyywrap
 
-%x AUTOR
+%s AUTOR
 
 %%
-\ +author\ *\=\ *(\{|\")    { printf("AUTOR$"); BEGIN AUTOR; }
-<AUTOR>\ +and\ +            { printf ("$$"); }
-<AUTOR>[^\n]+(\}\,|\"\,)    { printf ("$},"); BEGIN INITIAL; }
-<AUTOR>.+                   { ECHO; }
-(.|\n)                      { ECHO; }
+\ +author\ *\=\ *(\{|\")           { printf("AUTOR$$"); BEGIN AUTOR; }
+<AUTOR>\ +and\ +                   { printf ("$$"); }
+<AUTOR>(\}|\")\,                   { printf ("$},"); BEGIN INITIAL; }
+
+(.|\n)                             { ECHO; }
 %%
 
 int main () {

@@ -1,6 +1,6 @@
 saida.html: lex.yy.c funcs.o 
 	gcc lex.yy.c funcs.o
-	./a.out < exemplo-utf8.bib > saida.html
+	./a.out < cenas.txt > saida.html
 lex.yy.c: filtrobase.l
 	flex filtrobase.l
 funcs.o: funcs.c funcs.h
