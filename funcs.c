@@ -29,3 +29,4 @@ void acrescenta (LCat *l, char *s) {
         *l = new;
     }
 }
+

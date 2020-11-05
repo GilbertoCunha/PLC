@@ -1,6 +1,9 @@
 typedef struct categoria {
     char *nome;
     int num_ocorr;
+    char *chave;
+    char *titulo;
+    char **autores;
     struct categoria *prox;
 } *LCat;
 

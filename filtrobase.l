@@ -9,12 +9,24 @@ LCat l = NULL;
 %}
 
 
-%x CATEGORIA
+%x CATEGORIA CHAVE TITULO AUTORES AUTOR FIM
 
 %%
-\@                      { BEGIN CATEGORIA; }
-<CATEGORIA>\{           { BEGIN INITIAL; }
-<CATEGORIA>[^\{]+       { acrescenta(&l, str_to_lower(yytext)); }
+\@                              { BEGIN CATEGORIA; }
+<CATEGORIA>[^\{]+               { acrescenta(&l, str_to_lower(yytext)); }
+<CATEGORIA>\{                   { BEGIN CHAVE; }
+
+<CHAVE>[^\,]+                   { ; }
+<CHAVE>\,                       { BEGIN INITIAL; }
+
+<*>\ +author\ *\=\ *(\{|\")                        { BEGIN AUTORES; }
+<AUTORES>((\ +and\ +)*.+)+(\}\,|\"\,)          { printf("nome:%s \n",yytext); BEGIN INITIAL;}
+
+
+
+
+<*>\ +title\ *\=\ *(\{|\")      { BEGIN TITULO; }
+<TITULO>([^\}\,]|[^\"\,])+      { BEGIN INITIAL;}
 
 (.|\n)                  { ; }
 %%
