@@ -27,8 +27,8 @@ LETRAS [a-zA-Z\,\.\ ]
 <CHAVE>\,                            { BEGIN DENTRO; }
 
 <DENTRO>AUTOR\$                      { BEGIN AUTORES; }
-<AUTORES>\$[^\$]+?\$                 { acrescentaLStr (&a, yytext+1); }
 <AUTORES>\}\,                        { BEGIN DENTRO; }
+<AUTORES>\$[^\$]+\$                  { yytext[strlen(yytext)-1] = '\0'; acrescentaLStr (&a, yytext+1); }
 
 <DENTRO>^\ *title\ *\=\ *            { BEGIN TITULO; }
 <TITULO>\"[^\"]+?\"\,                { titulo = strdup (yytext); BEGIN DENTRO; }
