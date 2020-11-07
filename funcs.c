@@ -60,7 +60,7 @@ void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores) {
 }
 
 void copiaLProj (LProj *source, LProj *dest) {
-    *dest = NULL;
+    while (*dest != NULL) dest = &((*dest)->prox);
     while (*source != NULL) {
         *dest = malloc (sizeof (struct projeto));
         (*dest)->chave = (*source)->chave;

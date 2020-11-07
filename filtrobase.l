@@ -38,18 +38,57 @@ LETRAS [a-zA-Z\,\.\ ]
 %%
 
 void ShowCat (LCat *l) {
-    printf ("\t\t<h> Contagem de categorias </h>\n");
-    printf ("\t\t<ol>\n");
     while (*l != NULL) {
-        printf("\t\t\t<li> Nome: %s | Num_ocorr: %d </li>\n", (*l)->nome, (*l)->num_ocorr);
+        printf("\t\t<h1> <b> Categoria %s</b> - %d ocorrências </h1>\n", (*l)->nome, (*l)->num_ocorr);
+
+        LProj *sitio = &((*l)->projeto);
+        while (*sitio != NULL) {
+            printf ("\t\t\t<h3> Título: %s </h3>\n", (*sitio)->titulo);
+            printf ("\t\t\t\t<ul> Chave: %s </ul>\n", (*sitio)->chave);
+            printf ("\t\t\t\t<ul> Autores: ");
+
+            LStr *sitio2 = &((*sitio)->autores);
+            while (*sitio2 != NULL && (*sitio2)->prox != NULL) {
+                printf ("%s and ", (*sitio2)->nome);
+                sitio2 = &((*sitio2)->prox);
+            }
+            if ((*sitio2) != NULL) printf ("%s", (*sitio2)->nome);
+            printf (" </ul>\n\n");
+            sitio = &((*sitio)->prox); 
+        }
+
         l = &((*l)->prox);
     }
-    printf ("\t\t</ol>\n");
+}
+
+int contaTitulos (LProj *p) {
+    int r = 0;
+    while (*p != NULL) {
+        r += 1;
+        p = &((*p)->prox);
+    }
+    return r;
 }
 
 int yywrap () {
-    printf ("<!DOCTYPE html>");
+    LCat *sitio = &l;
+    while (*sitio != NULL) {
+        printf ("A categoria %s tem %d títulos\n", (*sitio)->nome, contaTitulos (&((*sitio)->projeto)));
+        sitio = &((*sitio)->prox);
+    }
+
+    printf ("<!DOCTYPE html>\n");
+    printf ("<html>\n");
+    printf ("\t<head>\n");
+    printf ("\t\t<title> Trabalho 1 </title>\n");
+    printf ("\t\t<meta charset=\"UTF-8\" >\n");
+    printf ("\t</head>\n");
+    printf ("\t<body>\n");
+    
     ShowCat (&l);
+    
+    printf ("\t</body>\n");
+    printf ("</html>\n");
     return 1;
 }
 
