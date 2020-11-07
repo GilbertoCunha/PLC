@@ -19,9 +19,9 @@ LETRAS [a-zA-Z\,\.\ ]
 
 %%
 \@                                   { BEGIN CATEGORIA; }
-<CATEGORIA>[^\{]+                    { nome = strdup (yytext); acrescentaCat (&l, str_to_lower(yytext)); }
+<CATEGORIA>[^\{]+                    { nome = strdup (str_to_lower (yytext)); }
 <CATEGORIA>\{                        { BEGIN CHAVE; }
-<DENTRO>\n\ *\}                      { ShowLStr (&a); BEGIN INITIAL; p = NULL; a = NULL; }
+<DENTRO>\n\ *\}                      { acrescentaProj (&p, chave, titulo, a); acrescentaCat (&l, nome, p); BEGIN INITIAL; p = NULL; a = NULL; }
 
 <CHAVE>[^\,]+                        { chave = strdup (yytext); }
 <CHAVE>\,                            { BEGIN DENTRO; }
@@ -48,6 +48,7 @@ void ShowCat (LCat *l) {
 }
 
 int yywrap () {
+    printf ("<!DOCTYPE html>");
     ShowCat (&l);
     return 1;
 }

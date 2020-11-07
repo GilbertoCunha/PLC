@@ -18,7 +18,7 @@ typedef struct categoria {
 } *LCat;
 
 char *str_to_lower (char *s);
-void acrescentaCat (LCat *l, char *s);
+void acrescentaCat (LCat *l, char *s, LProj p);
 void ShowLStr (LStr *l);
 void acrescentaLStr (LStr *l, char *s);
 void ShowProj (LProj *p);
