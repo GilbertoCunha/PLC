@@ -30,9 +30,8 @@ LETRAS [a-zA-Z\,\.\ ]
 <AUTORES>\}\,                        { BEGIN DENTRO; }
 <AUTORES>\$[^\$]+\$                  { yytext[strlen(yytext)-1] = '\0'; acrescentaLStr (&a, yytext+1); }
 
-<DENTRO>^\ *title\ *\=\ *            { BEGIN TITULO; }
-<TITULO>\"[^\"]+?\"\,                { titulo = strdup (yytext); BEGIN DENTRO; }
-<TITULO>\{[^\}]+?\}\,                { titulo = strdup (yytext); BEGIN DENTRO; }
+<DENTRO>TITULO\$                     { BEGIN TITULO; }
+<TITULO>\$[^\$]+\$                   { yytext[strlen(yytext)-1] = '\0'; titulo = strdup (yytext+1); BEGIN DENTRO; }
 
 <*>(.|\n)                            { ; }
 %%
