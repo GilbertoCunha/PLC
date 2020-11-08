@@ -59,6 +59,18 @@ void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores) {
     (*p)->prox = NULL;
 }
 
+void acrescentaAut (LAut *a, char *name, char *pub) {
+    while (*a != NULL && strcmp((*a)->nome, name) != 0) a = &((*a)->prox);
+
+    if (*a == NULL) {
+        (*a) = malloc (sizeof (struct autor));
+        (*a)->nome = strdup (name);
+        (*a)->prox = NULL;
+    }
+    acrescentaLStr (&((*a)->public), pub);
+}
+
+
 void copiaLProj (LProj *source, LProj *dest) {
     while (*dest != NULL) dest = &((*dest)->prox);
     while (*source != NULL) {

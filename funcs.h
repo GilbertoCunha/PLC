@@ -3,6 +3,12 @@ typedef struct slist {
   struct slist *prox;
 } *LStr;
 
+typedef struct autor {
+  char *nome;
+  struct slist *public;
+  struct autor *prox;
+}*LAut;
+
 typedef struct projeto {
     char *chave;
     char *titulo;
@@ -23,3 +29,4 @@ void ShowLStr (LStr *l);
 void acrescentaLStr (LStr *l, char *s);
 void ShowProj (LProj *p);
 void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores);
+void acrescentaAut (LAut *a, char *name, char *pub);

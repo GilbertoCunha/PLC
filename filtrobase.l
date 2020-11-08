@@ -7,6 +7,7 @@
 LCat l = NULL;
 LProj p = NULL;
 LStr a = NULL;
+LAut autores = NULL;
 char *nome;
 char *chave;
 char *titulo;
@@ -21,7 +22,15 @@ LETRAS [a-zA-Z\,\.\ ]
 \@                                   { BEGIN CATEGORIA; }
 <CATEGORIA>[^\{]+                    { nome = strdup (str_to_lower (yytext)); }
 <CATEGORIA>\{                        { BEGIN CHAVE; }
-<DENTRO>\n\ *\}                      { acrescentaProj (&p, chave, titulo, a); acrescentaCat (&l, nome, p); BEGIN INITIAL; p = NULL; a = NULL; }
+<DENTRO>\n\ *\}                      { 
+    acrescentaProj (&p, chave, titulo, a); 
+    acrescentaCat (&l, nome, p);
+    while (a != NULL) {
+        acrescentaAut (&autores, a->nome, titulo);
+        a = a->prox;
+    } 
+    BEGIN INITIAL; p = NULL; 
+}
 
 <CHAVE>[^\,]+                        { chave = strdup (yytext); }
 <CHAVE>\,                            { BEGIN DENTRO; }
@@ -60,22 +69,32 @@ void ShowCat (LCat *l) {
     }
 }
 
-int contaTitulos (LProj *p) {
+int contaPubs (LStr *a) {
     int r = 0;
-    while (*p != NULL) {
+
+    while (*a != NULL) {
+        a = &((*a)->prox);
         r += 1;
-        p = &((*p)->prox);
     }
+
     return r;
 }
 
-int yywrap () {
-    LCat *sitio = &l;
-    while (*sitio != NULL) {
-        printf ("A categoria %s tem %d títulos\n", (*sitio)->nome, contaTitulos (&((*sitio)->projeto)));
-        sitio = &((*sitio)->prox);
-    }
+void ShowAut (LAut *a) {
+    while ((*a) != NULL) {
+        printf ("\t\t<h1><b> %s </b> - %d Publicações\n", (*a)->nome, contaPubs (&((*a)->public)));
 
+        LStr *sitio = &((*a)->public);
+        while (*sitio != NULL) {
+            printf ("\t\t\t<ul> %s </ul>\n", (*sitio)->nome);
+            sitio = &((*sitio)->prox);
+        }
+        printf ("\n");
+        a = &((*a)->prox);
+    }
+}
+
+int yywrap () {
     printf ("<!DOCTYPE html>\n");
     printf ("<html>\n");
     printf ("\t<head>\n");
@@ -85,9 +104,11 @@ int yywrap () {
     printf ("\t<body>\n");
     
     ShowCat (&l);
+    ShowAut (&autores);
     
     printf ("\t</body>\n");
     printf ("</html>\n");
+
     return 1;
 }
 
