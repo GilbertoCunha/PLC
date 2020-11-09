@@ -43,3 +43,7 @@ void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores);
 void acrescentaAut (LAut *a, char *name, char *pub);
 void acrescentaNodo(LNodo *n, char *nome);
 void initGraph (Graph *g, char *nome);
+void ShowGraph (Graph *grafo, char *path);
+void ShowAut (LAut *a);
+int contaPubs (LStr *a);
+void ShowCat (LCat *l);

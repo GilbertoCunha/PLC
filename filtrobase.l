@@ -2,10 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
 #include "funcs.h"
-
-#define PI 3.14159265358979323846
 
 FILE *file;
 LCat l = NULL;
@@ -30,6 +27,7 @@ LETRAS [a-zA-Z\,\.\ ]
 <DENTRO>\n\ *\}                      { 
     acrescentaProj (&p, chave, titulo, a); 
     acrescentaCat (&l, nome, p);
+
     LStr *sitio = &a;
     while (*sitio != NULL && strcmp((*sitio)->nome, grafo->nome) != 0) sitio = &((*sitio)->prox);
     if (*sitio != NULL) {
@@ -43,6 +41,7 @@ LETRAS [a-zA-Z\,\.\ ]
         acrescentaAut (&autores, a->nome, titulo);
         a = a->prox;
     }
+
     BEGIN INITIAL; p = NULL; 
 }
 
@@ -59,80 +58,6 @@ LETRAS [a-zA-Z\,\.\ ]
 <*>(.|\n)                            { ; }
 %%
 
-void ShowCat (LCat *l) {
-    while (*l != NULL) {
-        printf("\t\t<h1> <b> Categoria %s</b> - %d ocorrências </h1>\n", (*l)->nome, (*l)->num_ocorr);
-
-        LProj *sitio = &((*l)->projeto);
-        while (*sitio != NULL) {
-            printf ("\t\t\t<h3> Título: %s </h3>\n", (*sitio)->titulo);
-            printf ("\t\t\t\t<ul> Chave: %s </ul>\n", (*sitio)->chave);
-            printf ("\t\t\t\t<ul> Autores: ");
-
-            LStr *sitio2 = &((*sitio)->autores);
-            while (*sitio2 != NULL && (*sitio2)->prox != NULL) {
-                printf ("%s and ", (*sitio2)->nome);
-                sitio2 = &((*sitio2)->prox);
-            }
-            if ((*sitio2) != NULL) printf ("%s", (*sitio2)->nome);
-            printf (" </ul>\n\n");
-            sitio = &((*sitio)->prox); 
-        }
-
-        l = &((*l)->prox);
-    }
-}
-
-int contaPubs (LStr *a) {
-    int r = 0;
-
-    while (*a != NULL) {
-        a = &((*a)->prox);
-        r += 1;
-    }
-
-    return r;
-}
-
-void ShowAut (LAut *a) {
-    while ((*a) != NULL) {
-        printf ("\t\t<h1><b> %s </b> - %d Publicações\n", (*a)->nome, contaPubs (&((*a)->public)));
-
-        LStr *sitio = &((*a)->public);
-        while (*sitio != NULL) {
-            printf ("\t\t\t<ul> %s </ul>\n", (*sitio)->nome);
-            sitio = &((*sitio)->prox);
-        }
-        printf ("\n");
-        a = &((*a)->prox);
-    }
-}
-
-void ShowGraph (Graph *grafo){
-    LNodo *aux = &((*grafo)->autores);
-    file = fopen("graph.dot", "w");
-    fprintf (file, "digraph G {\n");
-    int num = 1;
-    while (*aux != NULL){
-        fprintf (file,"\t%d -> %d;\n", 0, num++);
-        aux = &((*aux)->prox);
-    }
-    int total = num-1;
-    float x, y;
-    aux = &((*grafo)->autores);
-    fprintf (file,"\t%d [label=\"%s\", pos=\"0,0!\"];\n", 0,(*grafo)->nome);
-    num = 1;
-    while (*aux != NULL){
-        x = (total / (2*PI)) * cos((2*PI) * (num-1) / total);
-        y = (total / (2*PI)) * sin((2*PI) * (num-1) / total);
-        fprintf (file, "\t%d [label=\"%s\n%d em comum\"", num++,(*aux)->nome, (*aux)->num_ocorr);
-        fprintf (file, ", pos=\"%f,%f!\"];\n", x, y);
-        aux = &((*aux)->prox);
-    }
-    fprintf (file,"}");
-    fclose(file);
-}
-
 int yywrap () {
     printf ("<!DOCTYPE html>\n");
     printf ("<html>\n");
@@ -144,7 +69,7 @@ int yywrap () {
     
     ShowCat (&l);
     ShowAut (&autores);
-    ShowGraph (&grafo);
+    ShowGraph (&grafo, "graph.dot");
     
     printf ("\t</body>\n");
     printf ("</html>\n");
@@ -153,7 +78,7 @@ int yywrap () {
 }
 
 int main () {
-    initGraph (&grafo, "Pedro Rangel Henriques");
+    initGraph (&grafo, "Tomaz Kosar");
     yylex();
     return 0;
 }

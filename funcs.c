@@ -128,6 +128,76 @@ void acrescentaCat (LCat *l, char *s, LProj p) {
     }
 }
 
+void ShowCat (LCat *l) {
+    while (*l != NULL) {
+        printf("\t\t<h1> <b> Categoria %s</b> - %d ocorrências </h1>\n", (*l)->nome, (*l)->num_ocorr);
+
+        LProj *sitio = &((*l)->projeto);
+        while (*sitio != NULL) {
+            printf ("\t\t\t<h3> Título: %s </h3>\n", (*sitio)->titulo);
+            printf ("\t\t\t\t<ul> Chave: %s </ul>\n", (*sitio)->chave);
+            printf ("\t\t\t\t<ul> Autores: ");
+
+            LStr *sitio2 = &((*sitio)->autores);
+            while (*sitio2 != NULL && (*sitio2)->prox != NULL) {
+                printf ("%s and ", (*sitio2)->nome);
+                sitio2 = &((*sitio2)->prox);
+            }
+            if ((*sitio2) != NULL) printf ("%s", (*sitio2)->nome);
+            printf (" </ul>\n\n");
+            sitio = &((*sitio)->prox); 
+        }
+
+        l = &((*l)->prox);
+    }
+}
+
+int contaPubs (LStr *a) {
+    int r = 0;
+
+    while (*a != NULL) {
+        a = &((*a)->prox);
+        r += 1;
+    }
+
+    return r;
+}
+
+void ShowAut (LAut *a) {
+    while ((*a) != NULL) {
+        printf ("\t\t<h1><b> %s </b> - %d Publicações\n", (*a)->nome, contaPubs (&((*a)->public)));
+
+        LStr *sitio = &((*a)->public);
+        while (*sitio != NULL) {
+            printf ("\t\t\t<ul> %s </ul>\n", (*sitio)->nome);
+            sitio = &((*sitio)->prox);
+        }
+        printf ("\n");
+        a = &((*a)->prox);
+    }
+}
+
+void ShowGraph (Graph *grafo, char *path) {
+    LNodo *aux = &((*grafo)->autores);
+    FILE *file = fopen(path, "w");
+    fprintf (file, "digraph G {\n");
+    fprintf (file, "\tlayout = fdp;\n");
+    int num = 1;
+    while (*aux != NULL){
+        fprintf (file,"\t%d -> %d;\n", 0, num++);
+        aux = &((*aux)->prox);
+    }
+    aux = &((*grafo)->autores);
+    fprintf (file,"\t%d [label=\"%s\", pos=\"0,0!\"];\n", 0,(*grafo)->nome);
+    num = 1;
+    while (*aux != NULL){
+        fprintf (file, "\t%d [label=\"%s\n%d em comum\"];\n", num++,(*aux)->nome, (*aux)->num_ocorr);
+        aux = &((*aux)->prox);
+    }
+    fprintf (file,"}");
+    fclose(file);
+}
+
 /*
 int main () {
     LCat categoria = NULL;
