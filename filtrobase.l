@@ -114,7 +114,7 @@ void ShowGraph (Graph *grafo){
     fprintf (file, "digraph G {\n");
     int num = 1;
     while (*aux != NULL){
-        fprintf (file,"\t%d -> %d [label = \"%d\"];\n", 0, num++, (*aux)->num_ocorr);
+        fprintf (file,"\t%d -> %d;\n", 0, num++);
         aux = &((*aux)->prox);
     }
     int total = num-1;
@@ -125,7 +125,7 @@ void ShowGraph (Graph *grafo){
     while (*aux != NULL){
         x = (total / (2*PI)) * cos((2*PI) * (num-1) / total);
         y = (total / (2*PI)) * sin((2*PI) * (num-1) / total);
-        fprintf (file, "\t%d [label=\"%s\"", num++,(*aux)->nome);
+        fprintf (file, "\t%d [label=\"%s\n%d em comum\"", num++,(*aux)->nome, (*aux)->num_ocorr);
         fprintf (file, ", pos=\"%f,%f!\"];\n", x, y);
         aux = &((*aux)->prox);
     }
