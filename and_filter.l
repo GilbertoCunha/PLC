@@ -46,6 +46,7 @@ char aux[100];
     memset(aux, 0, strlen(aux));
     printf ("$},"); BEGIN INITIAL; 
 }
+<AUTOR>Daniela\nda                       { printf (" "); }
 <AUTOR>(\n|\r|\t)                        { printf (" "); }
 <AUTOR>\ *\,\ *                          { printf (","); strcat (autor, ","); }
 <AUTOR>\ +                               { printf (" "); strcat (autor, " "); }
