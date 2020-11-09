@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "funcs.h"
+
+#define PI 3.14159265358979323846
 
 FILE *file;
 LCat l = NULL;
@@ -109,17 +112,21 @@ void ShowGraph (Graph *grafo){
     LNodo *aux = &((*grafo)->autores);
     file = fopen("graph.dot", "w");
     fprintf (file, "digraph G {\n");
-    fprintf (file, "\tlayout = sfdp;");
     int num = 1;
     while (*aux != NULL){
         fprintf (file,"\t%d -> %d [label = \"%d\"];\n", 0, num++, (*aux)->num_ocorr);
         aux = &((*aux)->prox);
-    } 
+    }
+    int total = num-1;
+    float x, y;
     aux = &((*grafo)->autores);
-    fprintf(file,"\t%d [label=\"%s\"];\n", 0,(*grafo)->nome);
+    fprintf (file,"\t%d [label=\"%s\", pos=\"0,0!\"];\n", 0,(*grafo)->nome);
     num = 1;
     while (*aux != NULL){
-        fprintf(file,"\t%d [label=\"%s\"];\n", num++,(*aux)->nome);
+        x = (total / (2*PI)) * cos((2*PI) * (num-1) / total);
+        y = (total / (2*PI)) * sin((2*PI) * (num-1) / total);
+        fprintf (file, "\t%d [label=\"%s\"", num++,(*aux)->nome);
+        fprintf (file, ", pos=\"%f,%f!\"];\n", x, y);
         aux = &((*aux)->prox);
     }
     fprintf (file,"}");
