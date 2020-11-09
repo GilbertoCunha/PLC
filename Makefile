@@ -1,6 +1,7 @@
 saida.html: lex.yy.c 
 	gcc lex.yy.c funcs.c
 	./a.out < cenas.txt > saida.html
+	dot -Tpng graph.dot > graph.png
 lex.yy.c: filtrobase.l and_filter.l
 	flex and_filter.l
 	gcc lex.yy.c
@@ -9,5 +10,6 @@ lex.yy.c: filtrobase.l and_filter.l
 clean: 
 	rm a.out
 	rm lex.yy.c 
-	
-   
+	rm graph.dot
+	rm graph.png
+	rm cenas.txt

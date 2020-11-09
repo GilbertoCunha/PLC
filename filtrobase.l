@@ -27,21 +27,19 @@ LETRAS [a-zA-Z\,\.\ ]
 <DENTRO>\n\ *\}                      { 
     acrescentaProj (&p, chave, titulo, a); 
     acrescentaCat (&l, nome, p);
-    initGraph (&grafo, "Nuno Oliveira");
     LStr *sitio = &a;
     while (*sitio != NULL && strcmp((*sitio)->nome, grafo->nome) != 0) sitio = &((*sitio)->prox);
     if (*sitio != NULL) {
         sitio = &a;
         while(*sitio!=NULL){
-            if (strcmp((*sitio)->nome,grafo->nome) != 0) acrescentaNodo(&(grafo->autores), (*sitio)->nome);
+            if (strcmp((*sitio)->nome,grafo->nome) != 0) acrescentaNodo (&(grafo->autores), (*sitio)->nome);
             sitio = &((*sitio)->prox);
         }
-
     }
     while (a != NULL) {
         acrescentaAut (&autores, a->nome, titulo);
         a = a->prox;
-    } 
+    }
     BEGIN INITIAL; p = NULL; 
 }
 
@@ -108,12 +106,21 @@ void ShowAut (LAut *a) {
 }
 
 void ShowGraph (Graph *grafo){
-    file = fopen("graph.dot","w");
-    fprintf (file,"grafo = {\n");
-    while ((*grafo)->autores != NULL){
-        fprintf(file,"\t%s -> %s\n",(*grafo)->nome,(*grafo)->autores->nome);
-        (*grafo)->autores = (*grafo)->autores->prox;
+    LNodo *aux = &((*grafo)->autores);
+    file = fopen("graph.dot", "w");
+    fprintf (file, "digraph G {\n");
+    int num = 1;
+    while (*aux != NULL){
+        fprintf (file,"\t%d -> %d [label = \"%d\"];\n", 0, num++, (*aux)->num_ocorr);
+        aux = &((*aux)->prox);
     } 
+    aux = &((*grafo)->autores);
+    fprintf(file,"\t%d [label=\"%s\"];\n", 0,(*grafo)->nome);
+    num = 1;
+    while (*aux != NULL){
+        fprintf(file,"\t%d [label=\"%s\"];\n", num++,(*aux)->nome);
+        aux = &((*aux)->prox);
+    }
     fprintf (file,"}");
     fclose(file);
 }
@@ -138,6 +145,7 @@ int yywrap () {
 }
 
 int main () {
+    initGraph (&grafo, "Pedro Rangel Henriques");
     yylex();
     return 0;
 }

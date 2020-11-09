@@ -60,7 +60,7 @@ void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores) {
 }
 
 void acrescentaNodo(LNodo *n, char *nome) {
-    while (*n != NULL && strcmp((*n)->nome,nome) != 0) n = &((*n)->prox);
+    while (*n != NULL && strcmp((*n)->nome, nome) != 0) n = &((*n)->prox);
 
     if(*n == NULL){
         (*n) = malloc(sizeof(struct nodo));
