@@ -1,7 +1,7 @@
 saida.html: lex.yy.c 
 	gcc lex.yy.c funcs.c
 	./a.out < cenas.txt > saida.html
-	dot -Tpng graph.dot > graph.png
+	dot -Tpng -Goverlap=false -Gsplines=true graph.dot > graph.png
 lex.yy.c: filtrobase.l and_filter.l
 	flex and_filter.l
 	gcc lex.yy.c

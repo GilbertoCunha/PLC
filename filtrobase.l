@@ -109,6 +109,7 @@ void ShowGraph (Graph *grafo){
     LNodo *aux = &((*grafo)->autores);
     file = fopen("graph.dot", "w");
     fprintf (file, "digraph G {\n");
+    fprintf (file, "\tlayout = sfdp;");
     int num = 1;
     while (*aux != NULL){
         fprintf (file,"\t%d -> %d [label = \"%d\"];\n", 0, num++, (*aux)->num_ocorr);
