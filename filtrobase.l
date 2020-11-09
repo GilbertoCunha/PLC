@@ -77,8 +77,10 @@ int yywrap () {
     return 1;
 }
 
-int main () {
-    initGraph (&grafo, "Tomaz Kosar");
+int main (int argc, char **argv) {
+    printf ("%s\n", argv[1]);
+    initGraph (&grafo, argv[1]);
     yylex();
+
     return 0;
 }
