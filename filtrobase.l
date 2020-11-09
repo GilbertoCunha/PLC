@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "funcs.h"
 
+FILE *file;
 LCat l = NULL;
 LProj p = NULL;
 LStr a = NULL;
@@ -11,6 +12,7 @@ LAut autores = NULL;
 char *nome;
 char *chave;
 char *titulo;
+Graph grafo = NULL;
 %}
 
 %x CATEGORIA CHAVE AUTORES AUTOR FIM TITULO
@@ -25,6 +27,17 @@ LETRAS [a-zA-Z\,\.\ ]
 <DENTRO>\n\ *\}                      { 
     acrescentaProj (&p, chave, titulo, a); 
     acrescentaCat (&l, nome, p);
+    initGraph (&grafo, "Nuno Oliveira");
+    LStr *sitio = &a;
+    while (*sitio != NULL && strcmp((*sitio)->nome, grafo->nome) != 0) sitio = &((*sitio)->prox);
+    if (*sitio != NULL) {
+        sitio = &a;
+        while(*sitio!=NULL){
+            if (strcmp((*sitio)->nome,grafo->nome) != 0) acrescentaNodo(&(grafo->autores), (*sitio)->nome);
+            sitio = &((*sitio)->prox);
+        }
+
+    }
     while (a != NULL) {
         acrescentaAut (&autores, a->nome, titulo);
         a = a->prox;
@@ -94,6 +107,17 @@ void ShowAut (LAut *a) {
     }
 }
 
+void ShowGraph (Graph *grafo){
+    file = fopen("graph.dot","w");
+    fprintf (file,"grafo = {\n");
+    while ((*grafo)->autores != NULL){
+        fprintf(file,"\t%s -> %s\n",(*grafo)->nome,(*grafo)->autores->nome);
+        (*grafo)->autores = (*grafo)->autores->prox;
+    } 
+    fprintf (file,"}");
+    fclose(file);
+}
+
 int yywrap () {
     printf ("<!DOCTYPE html>\n");
     printf ("<html>\n");
@@ -105,6 +129,7 @@ int yywrap () {
     
     ShowCat (&l);
     ShowAut (&autores);
+    ShowGraph (&grafo);
     
     printf ("\t</body>\n");
     printf ("</html>\n");

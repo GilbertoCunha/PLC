@@ -3,6 +3,17 @@ typedef struct slist {
   struct slist *prox;
 } *LStr;
 
+typedef struct nodo {
+  char *nome;
+  int num_ocorr;
+  struct nodo *prox;
+} *LNodo;
+
+typedef struct agraph {
+  char *nome;
+  struct nodo *autores;
+} *Graph;
+
 typedef struct autor {
   char *nome;
   struct slist *public;
@@ -30,3 +41,5 @@ void acrescentaLStr (LStr *l, char *s);
 void ShowProj (LProj *p);
 void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores);
 void acrescentaAut (LAut *a, char *name, char *pub);
+void acrescentaNodo(LNodo *n, char *nome);
+void initGraph (Graph *g, char *nome);

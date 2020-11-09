@@ -59,6 +59,24 @@ void acrescentaProj (LProj *p, char *chave, char *titulo, LStr autores) {
     (*p)->prox = NULL;
 }
 
+void acrescentaNodo(LNodo *n, char *nome) {
+    while (*n != NULL && strcmp((*n)->nome,nome) != 0) n = &((*n)->prox);
+
+    if(*n == NULL){
+        (*n) = malloc(sizeof(struct nodo));
+        (*n)->nome = strdup(nome);
+        (*n)->num_ocorr = 0;
+        (*n)->prox = NULL;
+    }
+    (*n)->num_ocorr++;
+}
+
+void initGraph (Graph *g, char *nome) {
+    *g = malloc (sizeof (struct agraph));
+    (*g)->nome = strdup (nome);
+    (*g)->autores = NULL;
+}
+
 void acrescentaAut (LAut *a, char *name, char *pub) {
     while (*a != NULL && strcmp((*a)->nome, name) != 0) a = &((*a)->prox);
 
@@ -115,15 +133,9 @@ int main () {
     LCat categoria = NULL;
     LProj proj = NULL;
     LStr nomes = NULL;
-
-    acrescentaLStr (&nomes, "hello");
-    acrescentaLStr (&nomes, "bye");
-    acrescentaProj (&proj, "Zé", "Abílio420", nomes);
-    nomes = NULL;
-    acrescentaCat (&categoria, "inproceeding", proj);
-    proj = NULL;
-    ShowProj (&(categoria->projeto));
-    ShowProj (&proj); 
+    Graph grafo = NULL;
+    initGraph(&grafo, "J.B. Barros");
+    printf("%s\n", grafo->nome);
 
     return 0;
 }*/
