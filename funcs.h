@@ -47,3 +47,4 @@ void ShowGraph (Graph *grafo, char *path);
 void ShowAut (LAut *a);
 int contaPubs (LStr *a);
 void ShowCat (LCat *l);
+void swapcomma (char *autor);

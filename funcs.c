@@ -4,6 +4,19 @@
 #include <stdlib.h>
 #include "funcs.h"
 
+void swapcomma (char autor[]) {
+    char aux[100];
+    int indice = -1;
+    for (int i=0; autor[i]!='\0'; ++i) if (autor[i] == ',') indice = i;
+    if (indice != -1) {
+        strcat (aux, autor+indice+1);
+        strcat (aux, " ");
+        autor[indice] = '\0';
+        strcat (aux, autor);
+        strcpy (autor, aux);
+    }
+}
+
 char *str_to_lower (char *s) {
     for (int i=0; i<strlen(s); ++i) s[i] = tolower(s[i]);
 
@@ -197,15 +210,3 @@ void ShowGraph (Graph *grafo, char *path) {
     fprintf (file,"}");
     fclose(file);
 }
-
-/*
-int main () {
-    LCat categoria = NULL;
-    LProj proj = NULL;
-    LStr nomes = NULL;
-    Graph grafo = NULL;
-    initGraph(&grafo, "J.B. Barros");
-    printf("%s\n", grafo->nome);
-
-    return 0;
-}*/
