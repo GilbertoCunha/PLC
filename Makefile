@@ -2,11 +2,11 @@ run: saida.html
 	./a.out "$(ARGS)" < aux.txt > saida.html
 	dot -Kfdp -Tpng -Goverlap=false -Gsplines=true graph.dot > graph.png
 
-saida.html: lista_autores
+saida.html: list_authors
 	flex filtrobase.l
 	gcc lex.yy.c funcs.c -lm
 
-lista_autores:
+list_authors:
 	flex name_filter.l
 	gcc lex.yy.c funcs.c
 	./a.out < exemplo-utf8.bib > aux.txt

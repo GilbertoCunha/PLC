@@ -4,17 +4,17 @@
 #include <stdlib.h>
 #include "funcs.h"
 
-void swapcomma (char autor[]) {
-    char aux[100];
-    int indice = -1;
-    for (int i=0; autor[i]!='\0'; ++i) if (autor[i] == ',') indice = i;
-    if (indice != -1) {
-        strcat (aux, autor+indice+1);
-        strcat (aux, " ");
-        autor[indice] = '\0';
-        strcat (aux, autor);
-        strcpy (autor, aux);
+void swap_comma (char nome[], char a[]) {
+    int i;
+    for (i=0; nome[i]!='\0' && nome[i]!=','; ++i);
+    if (i != strlen(nome)) {
+        strcat (a, nome+i+1);
+        strcat (a, " ");
+        nome[i] = '\0';
+        strcat (a, nome);
+        strcpy (nome, a);
     }
+    memset(a, 0, strlen(a));
 }
 
 char *str_to_lower (char *s) {
@@ -100,7 +100,6 @@ void acrescentaAut (LAut *a, char *name, char *pub) {
     }
     acrescentaLStr (&((*a)->public), pub);
 }
-
 
 void copiaLProj (LProj *source, LProj *dest) {
     while (*dest != NULL) dest = &((*dest)->prox);
@@ -209,4 +208,16 @@ void ShowGraph (Graph *grafo, char *path) {
     }
     fprintf (file,"}");
     fclose(file);
+}
+
+void acrescentaGrafo (Graph g, LStr auts) {
+    LStr *sitio = &auts;
+    while (*sitio != NULL && strcmp((*sitio)->nome, g->nome) != 0) sitio = &((*sitio)->prox);
+    if (*sitio != NULL) {
+        sitio = &auts;
+        while(*sitio!=NULL) {
+            if (strcmp((*sitio)->nome, g->nome) != 0) acrescentaNodo (&(g->autores), (*sitio)->nome);
+            sitio = &((*sitio)->prox);
+        }
+    }
 }

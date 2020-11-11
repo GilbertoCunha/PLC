@@ -27,16 +27,7 @@ LETRAS [a-zA-Z\,\.\ ]
 <DENTRO>\n\ *\}                      { 
     acrescentaProj (&p, chave, titulo, a); 
     acrescentaCat (&l, nome, p);
-
-    LStr *sitio = &a;
-    while (*sitio != NULL && strcmp((*sitio)->nome, grafo->nome) != 0) sitio = &((*sitio)->prox);
-    if (*sitio != NULL) {
-        sitio = &a;
-        while(*sitio!=NULL){
-            if (strcmp((*sitio)->nome,grafo->nome) != 0) acrescentaNodo (&(grafo->autores), (*sitio)->nome);
-            sitio = &((*sitio)->prox);
-        }
-    }
+    acrescentaGrafo (grafo, a);
     while (a != NULL) {
         acrescentaAut (&autores, a->nome, titulo);
         a = a->prox;
