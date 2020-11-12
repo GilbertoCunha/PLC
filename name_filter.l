@@ -31,10 +31,7 @@ char aux[100];
 <AUTOR>(\n|\r|\t)+\ *                           { strcat (autor, " "); }
 <AUTOR>\ *\,\ *                                 { strcat (autor, ","); }
 <AUTOR>�                                        { strcat (autor, "?"); }
-<AUTOR>(\{|\})                                  { ; }
-<AUTOR>\\\~a                                    { strcat (autor, "a"); }
-<AUTOR>\\\'a                                    { strcat (autor, "a"); }
-<AUTOR>\\\'o                                    { strcat (autor, "o"); }
+<AUTOR>(\{|\}|\\'|\\~|\\^)                      { ; }
 <AUTOR>\ +                                      { strcat (autor, " "); }
 <AUTOR>.                                        { strcat (autor, yytext); }
 

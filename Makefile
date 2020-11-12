@@ -13,12 +13,12 @@ name_filter:
 	flex name_filter.l
 	flex name_filter.l
 	gcc lex.yy.c funcs.c
-	./a.out < "$(path)" > aux.txt
+	./a.out < "$(file)" > aux.txt
 
 list_authors:
 	flex name_filter.l
 	gcc lex.yy.c funcs.c
-	./a.out < exemplo-utf8.bib > aux.txt
+	./a.out < $(file)$ > aux.txt
 	cat lista_autores.txt
 
 clean:
