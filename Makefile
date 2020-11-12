@@ -1,10 +1,19 @@
 run: saida.html
-	./a.out "$(ARGS)" < aux.txt > saida.html
+	./a.out "$(name)" < aux.txt > saida.html
 	dot -Kfdp -Tpng -Goverlap=false -Gsplines=true graph.dot > graph.png
 
-saida.html: list_authors
+saida.html: name_filter
 	flex filtrobase.l
 	gcc lex.yy.c funcs.c -lm
+
+find_authors: name_filter
+	grep -e "$(name)" -o lista_autores.txt
+
+name_filter:
+	flex name_filter.l
+	flex name_filter.l
+	gcc lex.yy.c funcs.c
+	./a.out < "$(path)" > aux.txt
 
 list_authors:
 	flex name_filter.l
@@ -17,6 +26,6 @@ clean:
 	rm lex.yy.c
 	rm aux.txt
 	rm lista_autores.txt
-	rm saida.htlm
 	rm graph.dot
 	rm graph.png
+	rm saida.htlm
