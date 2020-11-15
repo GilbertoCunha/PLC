@@ -46,20 +46,31 @@ int main (int argc, char **argv) {
     initGraph (&grafo, argv[1]);
     yylex();
 
-    printf ("<!DOCTYPE html>\n");
-    printf ("<html>\n");
-    printf ("\t<head>\n");
-    printf ("\t\t<title> Trabalho 1 </title>\n");
-    printf ("\t\t<meta charset=\"UTF-8\" >\n");
-    printf ("\t</head>\n");
-    printf ("\t<body>\n");
-    
-    ShowCat (&l);
-    ShowAut (&autores);
-    ShowGraph (&grafo, "graph.dot");
-    
-    printf ("\t</body>\n");
-    printf ("</html>\n");
+    if (strcmp(argv[2], "html") == 0) {
+        printf ("<!DOCTYPE html>\n");
+        printf ("<html>\n");
+        printf ("\t<head>\n");
+        printf ("\t\t<title> Trabalho 1 </title>\n");
+        printf ("\t\t<meta charset=\"UTF-8\" >\n");
+        printf ("\t</head>\n");
+        printf ("\t<body>\n");
+        
+        ShowCat (&l);
+        ShowGraph (&grafo, "graph.dot");
+        
+        printf ("\t</body>\n");
+        printf ("</html>\n");
+    }
+    else if (strcmp(argv[2], "index") == 0) {
+        FILE *f = fopen ("author.txt", "w");
+        while (autores != NULL && strcmp(autores->nome, argv[1]) != 0) autores = autores->prox;
+        if (autores != NULL) {
+            autores->prox = NULL;
+            ShowAut (&autores, f);
+        }
+        else fprintf (f, "\nERROR: This author can't be found in the specified file\n");
+        fclose (f);
+    }
 
     return 0;
 }

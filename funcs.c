@@ -175,16 +175,17 @@ int contaPubs (LStr *a) {
     return r;
 }
 
-void ShowAut (LAut *a) {
+void ShowAut (LAut *a, FILE *f) {
+    fprintf (f, "\n");
     while ((*a) != NULL) {
-        printf ("\t\t<h1><b> %s </b> - %d Publicações\n", (*a)->nome, contaPubs (&((*a)->public)));
+        fprintf (f, "%s - %d Publicações\n", (*a)->nome, contaPubs (&((*a)->public)));
 
         LStr *sitio = &((*a)->public);
         while (*sitio != NULL) {
-            printf ("\t\t\t<ul> %s </ul>\n", (*sitio)->nome);
+            fprintf (f, "\t- %s \n", (*sitio)->nome);
             sitio = &((*sitio)->prox);
         }
-        printf ("\n");
+        fprintf (f, "\n");
         a = &((*a)->prox);
     }
 }
