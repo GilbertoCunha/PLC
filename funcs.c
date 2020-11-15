@@ -192,11 +192,11 @@ void ShowAut (LAut *a) {
 void ShowGraph (Graph *grafo, char *path) {
     LNodo *aux = &((*grafo)->autores);
     FILE *file = fopen(path, "w");
-    fprintf (file, "digraph G {\n");
+    fprintf (file, "graph G {\n");
     fprintf (file, "\tlayout = fdp;\n");
     int num = 1;
     while (*aux != NULL){
-        fprintf (file,"\t%d -> %d;\n", 0, num++);
+        fprintf (file,"\t%d -- %d;\n", 0, num++);
         aux = &((*aux)->prox);
     }
     aux = &((*grafo)->autores);

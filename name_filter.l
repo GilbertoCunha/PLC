@@ -12,7 +12,7 @@ char aux[100];
 %x AUTOR TITULO
 
 %%
-\ +(?i:author)\ *\=\ *(\{|\")\ *         { printf ("AUTOR$$"); BEGIN AUTOR; }
+^\ +(?i:author)\ *\=\ *(\{|\")\ *        { printf ("AUTOR$$"); BEGIN AUTOR; }
 ^\ +(?i:title)\ *\=\ *(\{|\")\ *         { printf ("TITULO$$"); BEGIN TITULO; }
 
 <AUTOR>((\ |\n|\r|\t)+and(\ |\n|\r|\t)+|\ and\ and\ )   {

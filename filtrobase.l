@@ -5,20 +5,12 @@
 #include "funcs.h"
 
 FILE *file;
-LCat l = NULL;
-LProj p = NULL;
-LStr a = NULL;
-LAut autores = NULL;
-char *nome;
-char *chave;
-char *titulo;
-Graph grafo = NULL;
+LCat l = NULL; LProj p = NULL; LStr a = NULL;
+LAut autores = NULL; Graph grafo = NULL;
+char *nome, *chave, *titulo;
 %}
 
-%x CATEGORIA CHAVE AUTORES AUTOR FIM TITULO
-%x DENTRO
-
-LETRAS [a-zA-Z\,\.\ ]
+%x CATEGORIA DENTRO CHAVE AUTORES TITULO
 
 %%
 \@                                   { BEGIN CATEGORIA; }
