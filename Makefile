@@ -1,10 +1,8 @@
-run: saida.html
-	@./a.out "$(name)" "html" < aux.txt > saida.html
-	@dot -Kfdp -Tpng -Goverlap=false -Gsplines=true graph.dot > graph.png
-
-saida.html: name_filter
+run: name_filter
 	@flex filtrobase.l
 	@gcc lex.yy.c funcs.c
+	@./a.out "$(name)" "html" < aux.txt > saida.html
+	@dot -Kfdp -Tpng -Goverlap=false -Gsplines=true graph.dot > graph.png
 
 find_author: name_filter
 	@flex filtrobase.l	
