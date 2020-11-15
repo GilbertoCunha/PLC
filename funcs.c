@@ -221,3 +221,18 @@ void acrescentaGrafo (Graph g, LStr auts) {
         }
     }
 }
+
+void ShowAuthorTable (FILE *f, LNodo autores) {
+    int num_nomes, num_chars;
+    fprintf (f, "\n\n");
+    for (int i=0; i<8; ++i) fprintf (f, "     ");
+    fprintf (f, "LISTA DE AUTORES\n\n");
+    while (autores != NULL) {
+        for (num_nomes=0; num_nomes<3 && autores != NULL; ++num_nomes) {
+            for (int i=0; autores->nome[i]!='\0'; ++i) fprintf (f, "%c", autores->nome[i]);
+            for (num_chars=strlen(autores->nome); num_chars<40; ++num_chars) fprintf (f, " ");
+            autores = autores->prox;
+        }
+        fprintf (f, "\n");
+    }
+}

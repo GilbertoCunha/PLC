@@ -10,6 +10,7 @@ LAut autores = NULL; Graph grafo = NULL;
 char *nome, *chave, *titulo;
 %}
 
+%option noyywrap
 %x CATEGORIA DENTRO CHAVE AUTORES TITULO
 
 %%
@@ -41,7 +42,10 @@ char *nome, *chave, *titulo;
 <*>(.|\n)                            { ; }
 %%
 
-int yywrap () {
+int main (int argc, char **argv) {
+    initGraph (&grafo, argv[1]);
+    yylex();
+
     printf ("<!DOCTYPE html>\n");
     printf ("<html>\n");
     printf ("\t<head>\n");
@@ -56,14 +60,6 @@ int yywrap () {
     
     printf ("\t</body>\n");
     printf ("</html>\n");
-
-    return 1;
-}
-
-int main (int argc, char **argv) {
-    printf ("%s\n", argv[1]);
-    initGraph (&grafo, argv[1]);
-    yylex();
 
     return 0;
 }

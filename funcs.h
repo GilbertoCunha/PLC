@@ -50,3 +50,4 @@ void ShowCat (LCat *l);
 void swap_comma (char nome[], char a[]);
 void acrescentaAuts (LAut *autores, LStr nomes, char *pub);
 void acrescentaGrafo (Graph g, LStr auts);
+void ShowAuthorTable (FILE *f, LNodo autores);
