@@ -17,7 +17,7 @@ char *nome, *chave, *titulo;
 \@                                   { BEGIN CATEGORIA; }
 <CATEGORIA>[^\{]+                    { nome = strdup (str_to_lower (yytext)); }
 <CATEGORIA>\{                        { BEGIN CHAVE; }
-<DENTRO>\n\ *\}                      { 
+<DENTRO>[\n\r]\ *\}                  { 
     acrescentaProj (&p, chave, titulo, a); 
     acrescentaCat (&l, nome, p);
     acrescentaGrafo (grafo, a);

@@ -36,7 +36,7 @@ char aux[100];
 <AUTOR>.                                        { strcat (autor, yytext); }
 
 <TITULO>(\}|\")\,                        { printf ("$},"); BEGIN INITIAL; }
-<TITULO>(\n|\r|\t)                       { ; }
+<TITULO>[\n\r\t\{\}]                     { ; }
 <TITULO>.                                { ECHO; }
 
 (.|\n)                                   { ECHO; }
