@@ -201,7 +201,7 @@ void ShowGraph (Graph *grafo, char *path) {
         aux = &((*aux)->prox);
     }
     aux = &((*grafo)->autores);
-    fprintf (file,"\t%d [label=\"%s\", pos=\"0,0!\"];\n", 0,(*grafo)->nome);
+    fprintf (file,"\t%d [label=\"%s\"];\n", 0,(*grafo)->nome);
     num = 1;
     while (*aux != NULL){
         fprintf (file, "\t%d [label=\"%s\n%d em comum\"];\n", num++,(*aux)->nome, (*aux)->num_ocorr);

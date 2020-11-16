@@ -11,7 +11,6 @@ find_author: name_filter
 	@rm aux.txt
 	@rm aux2.txt
 	@cat author.txt
-	@rm author.txt
 
 name_filter:
 	@flex name_filter.l

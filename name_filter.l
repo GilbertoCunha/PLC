@@ -14,6 +14,8 @@ char aux[100];
 %%
 ^\ +(?i:author)\ *\=\ *(\{|\")\ *        { printf ("AUTOR$$"); BEGIN AUTOR; }
 ^\ +(?i:title)\ *\=\ *(\{|\")\ *         { printf ("TITULO$$"); BEGIN TITULO; }
+<*>\\text(sc|it|bf)                      { ; }
+<*>\\(underline|emph)                    { ; }
 
 <AUTOR>([\ \n\r\t]+and[\ \n\r\t]+|(\ and)+\ )   {
     swap_comma (autor, aux);
