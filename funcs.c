@@ -149,9 +149,9 @@ void ShowCat (LCat *l) {
         LProj *sitio = &((*l)->projeto);
         printf ("<ol>\n");
         while (*sitio != NULL) {
-            printf ("\t\t\t<li> <b> Título: %s </b> </li>\n", (*sitio)->titulo);
-            printf ("\t\t\t\t<ul> \t\tChave: %s </ul>\n", (*sitio)->chave);
-            printf ("\t\t\t\t<ul> \t\tAutores: ");
+            printf ("\t\t\t<li style=\"font-size:1.5vw\"> <b> Título: %s </b> </li>\n", (*sitio)->titulo);
+            printf ("\t\t\t\t<ul> \t\t<b>Chave:</b> %s </ul>\n", (*sitio)->chave);
+            printf ("\t\t\t\t<ul> \t\t<b>Autores:</b> ");
 
             LStr *sitio2 = &((*sitio)->autores);
             while (*sitio2 != NULL && (*sitio2)->prox != NULL) {
@@ -271,6 +271,7 @@ void printHTMLstart () {
     printf ("<title> Trabalho 1 </title>\n");
     printf ("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
     printf ("<style>\nbody {\nfont-family: Arial;\n}\n");printf (".tab {\noverflow: hidden;\nborder: 1px solid #ccc;\nbackground-color: #f1f1f1;\n}\n");
+    printf ("img {\ndisplay: block;\nmargin-left: auto;\nmargin-right: auto;\n}\n");
     printf (".tab button {\nbackground-color: inherit;\nborder: none;\noutline: none;\ncursor: pointer;\n");
     printf ("padding: 14px 16px;\ntransition: 0.3s;\nfont-size: 17px;\n}\n");
     printf (".tab button:hover {\nbackground-color: #ddd;\n}\n");

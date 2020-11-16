@@ -60,7 +60,7 @@ int main (int argc, char **argv) {
         printf ("</div>\n");
         printf ("<div id=\"Grafo\" class=\"tabcontent\">\n");
         printf ("<img src=\"graph.png\" alt=\"Grafo dos autores em comum de %s\"", argv[1]);
-        printf ("width=\"600\">\n");
+        printf ("width=\"600\" class=\"center\">\n");
         printf ("</div>\n");
         
         printHTMLend ();
