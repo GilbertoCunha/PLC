@@ -142,7 +142,9 @@ void acrescentaCat (LCat *l, char *s, LProj p) {
 
 void ShowCat (LCat *l) {
     while (*l != NULL) {
-        printf("\t\t<h1> <b> Categoria %s</b> - %d ocorrências </h1>\n", (*l)->nome, (*l)->num_ocorr);
+        printf("\t\t<h1> <b> Categoria %s</b> - %d ", (*l)->nome, (*l)->num_ocorr);
+        if ((*l)->num_ocorr > 1) printf ("ocorrências </h1>\n");
+        else printf ("ocorrência </h1>\n");
 
         LProj *sitio = &((*l)->projeto);
         printf ("<ol>\n");
@@ -178,9 +180,13 @@ int contaPubs (LStr *a) {
 }
 
 void ShowAut (LAut *a) {
+    int num;
     printf ("\n");
     while ((*a) != NULL) {
-        printf ("<h1> %s - %d Publicações\n </h1>\n", (*a)->nome, contaPubs (&((*a)->public)));
+        num = contaPubs (&((*a)->public));
+        printf ("<h1> %s - %d ", (*a)->nome, contaPubs (&((*a)->public)));
+        if (num > 1) printf ("Publicações\n </h1>\n");
+        else printf ("Publicação\n </h1>\n");
 
         LStr *sitio = &((*a)->public);
         printf ("<ul>\n");
@@ -194,9 +200,13 @@ void ShowAut (LAut *a) {
 }
 
 void ShowAutF (LAut *a, FILE *f) {
+    int num;
     fprintf (f, "\n");
     while ((*a) != NULL) {
-        fprintf (f, "%s - %d Publicações\n", (*a)->nome, contaPubs (&((*a)->public)));
+        num = contaPubs (&((*a)->public));
+        fprintf (f, "%s - %d", (*a)->nome, num);
+        if (num > 1) fprintf (f, "Publicações\n");
+        else fprintf (f, "Publicação\n");
 
         LStr *sitio = &((*a)->public);
         while (*sitio != NULL) {
@@ -258,19 +268,20 @@ void ShowAuthorTable (FILE *f, LNodo autores) {
 
 void printHTMLstart () {
     printf ("<!DOCTYPE html>\n<html>\n<head>\n");
+    printf ("<title> Trabalho 1 </title>\n");
     printf ("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
-    printf ("<style>\nbody {\nfont-family: Arial;\n}\n");
-    printf (".tab {\noverflow: hidden;\nborder: 1px solid #ccc;\nbackground-color: #f1f1f1;\n}\n");
+    printf ("<style>\nbody {\nfont-family: Arial;\n}\n");printf (".tab {\noverflow: hidden;\nborder: 1px solid #ccc;\nbackground-color: #f1f1f1;\n}\n");
     printf (".tab button {\nbackground-color: inherit;\nborder: none;\noutline: none;\ncursor: pointer;\n");
     printf ("padding: 14px 16px;\ntransition: 0.3s;\nfont-size: 17px;\n}\n");
     printf (".tab button:hover {\nbackground-color: #ddd;\n}\n");
     printf (".tab button.active {\nbackground-color: #ccc;\n}\n");
     printf (".tabcontent {\ndisplay: none;\npadding: 6px 12px;\nborder: 1px solid #ccc;\nborder-top: none;\n}\n");
     printf ("</style>\n</head>\n<body>\n");
+    printf ("<pre class=\"tab\" style=\"text-align:center;\"> <h style=\"font-size:5vw\"> <b> BibTeXPro </b> </h> </pre>\n");
     printf ("<div class=\"tab\">\n");
     printf ("<button class=\"tablinks\" onclick=\"openCity(event, 'Categorias')\">Categorias</button>\n");
     printf ("<button class=\"tablinks\" onclick=\"openCity(event, 'Autores')\">Autores</button>\n");
-    printf ("<button class=\"tablinks\" onclick=\"openCity(event, 'Grafo')\">Grafo</button>\n</div>");
+    printf ("<button class=\"tablinks\" onclick=\"openCity(event, 'Grafo')\">Grafo</button>\n</div>\n");
 }
 
 void printHTMLend () {
