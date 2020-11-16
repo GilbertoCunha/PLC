@@ -145,10 +145,11 @@ void ShowCat (LCat *l) {
         printf("\t\t<h1> <b> Categoria %s</b> - %d ocorrências </h1>\n", (*l)->nome, (*l)->num_ocorr);
 
         LProj *sitio = &((*l)->projeto);
+        printf ("<ol>\n");
         while (*sitio != NULL) {
-            printf ("\t\t\t<h3> Título: %s </h3>\n", (*sitio)->titulo);
-            printf ("\t\t\t\t<ul> Chave: %s </ul>\n", (*sitio)->chave);
-            printf ("\t\t\t\t<ul> Autores: ");
+            printf ("\t\t\t<li> <b> Título: %s </b> </li>\n", (*sitio)->titulo);
+            printf ("\t\t\t\t<ul> \t\tChave: %s </ul>\n", (*sitio)->chave);
+            printf ("\t\t\t\t<ul> \t\tAutores: ");
 
             LStr *sitio2 = &((*sitio)->autores);
             while (*sitio2 != NULL && (*sitio2)->prox != NULL) {
@@ -159,6 +160,7 @@ void ShowCat (LCat *l) {
             printf (" </ul>\n\n");
             sitio = &((*sitio)->prox); 
         }
+        printf ("</ol>\n");
 
         l = &((*l)->prox);
     }
@@ -175,7 +177,23 @@ int contaPubs (LStr *a) {
     return r;
 }
 
-void ShowAut (LAut *a, FILE *f) {
+void ShowAut (LAut *a) {
+    printf ("\n");
+    while ((*a) != NULL) {
+        printf ("<h1> %s - %d Publicações\n </h1>\n", (*a)->nome, contaPubs (&((*a)->public)));
+
+        LStr *sitio = &((*a)->public);
+        printf ("<ul>\n");
+        while (*sitio != NULL) {
+            printf ("<li>\t%s \n </li>", (*sitio)->nome);
+            sitio = &((*sitio)->prox);
+        }
+        printf ("</ul>\n");
+        a = &((*a)->prox);
+    }
+}
+
+void ShowAutF (LAut *a, FILE *f) {
     fprintf (f, "\n");
     while ((*a) != NULL) {
         fprintf (f, "%s - %d Publicações\n", (*a)->nome, contaPubs (&((*a)->public)));
@@ -236,4 +254,34 @@ void ShowAuthorTable (FILE *f, LNodo autores) {
         }
         fprintf (f, "\n");
     }
+}
+
+void printHTMLstart () {
+    printf ("<!DOCTYPE html>\n<html>\n<head>\n");
+    printf ("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
+    printf ("<style>\nbody {\nfont-family: Arial;\n}\n");
+    printf (".tab {\noverflow: hidden;\nborder: 1px solid #ccc;\nbackground-color: #f1f1f1;\n}\n");
+    printf (".tab button {\nbackground-color: inherit;\nborder: none;\noutline: none;\ncursor: pointer;\n");
+    printf ("padding: 14px 16px;\ntransition: 0.3s;\nfont-size: 17px;\n}\n");
+    printf (".tab button:hover {\nbackground-color: #ddd;\n}\n");
+    printf (".tab button.active {\nbackground-color: #ccc;\n}\n");
+    printf (".tabcontent {\ndisplay: none;\npadding: 6px 12px;\nborder: 1px solid #ccc;\nborder-top: none;\n}\n");
+    printf ("</style>\n</head>\n<body>\n");
+    printf ("<div class=\"tab\">\n");
+    printf ("<button class=\"tablinks\" onclick=\"openCity(event, 'Categorias')\">Categorias</button>\n");
+    printf ("<button class=\"tablinks\" onclick=\"openCity(event, 'Autores')\">Autores</button>\n");
+    printf ("<button class=\"tablinks\" onclick=\"openCity(event, 'Grafo')\">Grafo</button>\n</div>");
+}
+
+void printHTMLend () {
+    printf ("<script>\nfunction openCity(evt, cityName) {\n");
+    printf ("var i, tabcontent, tablinks;\n");
+    printf ("tabcontent = document.getElementsByClassName(\"tabcontent\");\n");
+    printf ("for (i = 0; i < tabcontent.length; i++) {\ntabcontent[i].style.display = \"none\";\n}");
+    printf ("tablinks = document.getElementsByClassName(\"tablinks\");\n");
+    printf ("for (i = 0; i < tablinks.length; i++) {\n");
+    printf ("tablinks[i].className = tablinks[i].className.replace(\" active\", \"\");\n}");
+    printf ("document.getElementById(cityName).style.display = \"block\";\n");
+    printf ("evt.currentTarget.className += \" active\";\n}\n</script>\n");
+    printf ("</body>\n</html>");
 }

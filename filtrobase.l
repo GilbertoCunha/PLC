@@ -47,26 +47,30 @@ int main (int argc, char **argv) {
     yylex();
 
     if (strcmp(argv[2], "html") == 0) {
-        printf ("<!DOCTYPE html>\n");
-        printf ("<html>\n");
-        printf ("\t<head>\n");
-        printf ("\t\t<title> Trabalho 1 </title>\n");
-        printf ("\t\t<meta charset=\"UTF-8\" >\n");
-        printf ("\t</head>\n");
-        printf ("\t<body>\n");
+        printHTMLstart ();
         
-        ShowCat (&l);
         ShowGraph (&grafo, "graph.dot");
+        system("dot -Kfdp -Tpng -Goverlap=false -Gsplines=true graph.dot > graph.png");
+
+        printf ("<div id=\"Categorias\" class=\"tabcontent\">\n");
+        ShowCat (&l);
+        printf ("</div>\n");
+        printf ("<div id=\"Autores\" class=\"tabcontent\">\n");
+        ShowAut (&autores);
+        printf ("</div>\n");
+        printf ("<div id=\"Grafo\" class=\"tabcontent\">\n");
+        printf ("<img src=\"graph.png\" alt=\"Grafo dos autores em comum de %s\"", argv[1]);
+        printf ("width=\"600\">\n");
+        printf ("</div>\n");
         
-        printf ("\t</body>\n");
-        printf ("</html>\n");
+        printHTMLend ();
     }
     else if (strcmp(argv[2], "index") == 0) {
         FILE *f = fopen ("author.txt", "w");
         while (autores != NULL && strcmp(autores->nome, argv[1]) != 0) autores = autores->prox;
         if (autores != NULL) {
             autores->prox = NULL;
-            ShowAut (&autores, f);
+            ShowAutF (&autores, f);
         }
         else fprintf (f, "\nERROR: This author can't be found in the specified file\n");
         fclose (f);
