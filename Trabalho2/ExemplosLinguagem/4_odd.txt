@@ -1,0 +1,11 @@
+int count
+int seq[5] = [1, 10, 7, 6, 3]
+
+# Iterar a sequência
+for (count, 0, 5) do
+
+    # Verificar se o número é ímpar
+    if seq[count]%2 == 0 then
+        write("O {count}º elemento do array com valor {seq[count]} é ímpar\n")
+
+write("O número de elementos ímpares é {count}\n")

@@ -1,0 +1,16 @@
+int N[4]
+int i , r
+
+for (i , 0, 4) do 
+    N[i] = read()
+    if i>0 then
+        if N[i] != N[i-1] then
+            r = 1
+
+if r != 1 then
+
+    write("Podem ser os lados de um quadrado\n")
+
+else write("Não podem ser os lados de um quadrado\n")
+
+
