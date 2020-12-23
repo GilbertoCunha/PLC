@@ -1,8 +1,10 @@
-int i , r , tmp
-int N = read()
-r = 1
+int i , r , tmp;
+int N = read();
+r = 1;
 
-for (i , 0 , N) do 
-    tmp = read()
-    r = r * tmp
-write ("O produto é {r}\n")
+for (i , 0 , N) ::
+    tmp = read();
+    r = r * tmp;
+:;
+
+write ("O produto é {r}\n");

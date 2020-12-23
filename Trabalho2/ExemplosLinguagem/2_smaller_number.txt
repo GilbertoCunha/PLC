@@ -1,15 +1,17 @@
-int N = read()
-int i, r, var
+int N = read();
+int i, r, var;
 
 # Ler o primeiro número
-r = read()
+r = read();
 
 # Criar ciclo
-for (i, 0, N-1) do
-    var = read()
+for (i, 0, N-1) ::
+    var = read();
     
     # Verificar se o novo elemento é menor que o resultado
-    if var < r then
-        r = var
+    if var < r ::
+        r = var;
+    :;
+:;
 
-write("O menor número é {r}\n")
+write("O menor número é {r}\n");
