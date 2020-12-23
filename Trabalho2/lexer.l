@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "y.tab.h"
 %}
 
 DIGIT [0-9]
@@ -10,27 +11,29 @@ SYMBS [\+\-\*\/\{\}\[\]\(\)!<>\\\;]
 %option noyywrap
 
 %%
-^int\               { printf ("T_INT "); } 
-^for\               { printf ("T_FOR "); } 
-[\t\ ]+for\         { printf ("T_FOR "); } 
-\ \:\:[\ \n]        { printf ("T_START "); } 
-^\:\;[\ \n]         { printf ("T_END "); } 
-[\ \n]+\:\;[\ \n]   { printf ("T_END "); } 
-^if\                { printf ("T_IF "); } 
-[\t\ ]+if\          { printf ("T_IF "); } 
-^else[\ \n]         { printf ("T_ELSE "); } 
-[\t\ ]+else[\ \n]   { printf ("T_ELSE "); }
-{DIGIT}+            { printf ("T_NUM "); } 
-{LETTER}+           { printf ("T_ID "); } 
-\"                  { printf ("\" "); BEGIN STRING; } 
-[ ]                 { printf (" "); } 
-(.|\n)              { printf ("%c ", yytext[0]); } 
+^int\               { return T_INT;  } 
+^for\               { return T_FOR; } 
+[\t\ ]+for\         { return T_FOR; } 
+\ \:\:[\ \n]        { return T_START; } 
+^\:\;[\ \n]         { return T_END; } 
+[\ \n]+\:\;[\ \n]   { return T_END; } 
+^if\                { return T_IF; } 
+[\t\ ]+if\          { return T_IF; } 
+^else[\ \n]         { return T_ELSE; } 
+[\t\ ]+else[\ \n]   { return T_ELSE; } 
+[ ]or[ ]            { return T_OR; } 
+[ ]and[ ]           { return T_AND; } 
+[ ]not              { return T_NOT; } 
+{DIGIT}+            { yylval.num = atoi(yytext); return T_NUM; } 
+{LETTER}+{DIGIT}*   { yylval.id = strdup(yytext); return T_ID; } 
+\"                  { return yytext[0]; BEGIN STRING; } 
+[\ \n\t\r]          { ; } 
+.                   { return yytext[0]; } 
 
-<STRING>\"          { printf ("\" "); BEGIN INITIAL; } 
-<STRING>(.|\n)      { printf ("%c", yytext[0]); } 
+<STRING>\"                    { return yytext[0]; BEGIN INITIAL; } 
+<STRING>\{{LETTER}+\}         { yytext[strlen(yytext)-1] = '\0'; yylval.id = strdup(yytext+1); return T_ID; }
+<STRING>\{{LETTER}+           { yytext[strlen(yytext)-1] = '\0'; yylval.id = strdup(yytext+1); return T_ID; }
+<STRING>\[{LETTER}+\]\}       { yytext[strlen(yytext)-1] = '\0'; yylval.id = strdup(yytext+1); return T_ID; }
+<STRING>\[{DIGIT}+\]\}        { yytext[strlen(yytext)-2] = '\0'; yylval.num = atoi(yytext+2); return T_NUM; }
+<STRING>(.|\n)                { return yytext[0]; } 
 %%
-
-int main () {
-    yylex ();
-    return 0;
-}

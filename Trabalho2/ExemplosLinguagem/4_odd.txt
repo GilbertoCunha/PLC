@@ -1,11 +1,9 @@
 int count, for;
 int seq[5] = [1, 10, 7, 6, 3];
 
-# Iterar a sequência
 for (count, 0, 5) ::
 
-    # Verificar se o número é ímpar
-    if seq[count]%2 == 0 ::
+    if seq[count]%2 == 0 and count == count or count == count or count != not(count) ::
         write("O elemento {count} do array com valor {seq[count]} é ímpar\n");
     :;
 :;
