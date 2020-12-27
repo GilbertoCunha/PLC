@@ -21,6 +21,9 @@ void yyerror(char *s);
 %token T_AND T_OR T_NOT
 %token T_ERROR
 
+%type <num> Factor Term Expression
+%start L
+
 %%
 L : Declarations
   ;
@@ -30,10 +33,35 @@ Declarations : Declaration Declarations
              ;
 
 Declaration : T_INT T_ID ';'                            { g_hash_table_insert(vars, $2, 0); }
-            | T_INT T_ID '=' T_NUM ';'                  { g_hash_table_insert(vars, $2, $4); }
-            | T_INT T_ID '=' T_ID ';'                   { g_hash_table_insert(vars, $2, g_hash_table_lookup(vars, $4)); }
+            | T_INT T_ID '=' Expression ';'             { g_hash_table_insert(vars, $2, $4); }
             | T_INT T_ID '[' T_NUM ']' '=' List ';'
             ;
+
+Expression : Expression '+' Term  { $$ = $1 + $3; }
+           | Expression '-' Term  { $$ = $1 - $3; }
+           | Term                 { $$ = $1; }
+           ;
+
+Term : Term '*' Factor  { $$ = $1 * $3; }
+     | Term '/' Factor  { 
+    if ($3 == 0) yyerror("Division by zero!\n");
+    else $$ = $1 / $3;
+}
+     | Factor           { $$ = $1; }
+     ;
+
+Factor : T_NUM  { $$ = $1; } 
+       | T_ID   { 
+    void *r = g_hash_table_lookup(vars, $1);
+    if (r == NULL) {
+      char error_str[100];
+      printf ("%s\n", $1);
+      asprintf(&error_str, "Variable \"%s\" has not been created\n", $1);
+      yyerror(error_str);
+    }
+    else $$ = r;
+}
+       ;
 
 List : '[' ListAux ']'
      | '[' ']'

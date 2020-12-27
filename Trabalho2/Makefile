@@ -6,3 +6,8 @@ compile: lexer.l parser.y
 lexer: lexer.l
 	@flex lexer.l
 	@gcc lex.yy.c
+
+clean:
+	@rm *.c
+	@rm *.h
+	@rm *.out
