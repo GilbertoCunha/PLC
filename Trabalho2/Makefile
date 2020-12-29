@@ -1,13 +1,20 @@
 compile: lexer.l parser.y
 	@yacc -d parser.y
 	@flex lexer.l
-	@gcc y.tab.c `pkg-config --cflags --libs glib-2.0` -w
+	@gcc AVLTrees.c y.tab.c `pkg-config --cflags --libs glib-2.0` -w
 
 lexer: lexer.l
 	@flex lexer.l
 	@gcc lex.yy.c
 
+graphAVL: GraphAVL.c AVLTrees.c AVLTrees.h
+	@gcc -w AVLTrees.c GraphAVL.c
+	@./a.out
+
 clean:
-	@rm *.c
-	@rm *.h
 	@rm *.out
+	@rm lex.yy.c
+	@rm y.tab.h
+	@rm y.tab.c
+	@rm *.dot
+	@rm *.png

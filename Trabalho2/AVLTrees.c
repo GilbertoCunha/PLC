@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "AVLTrees.h"
 
 void ShowAVLTree (AVLTree a) {
     if (a != NULL) {
-        printf ("(%d, %d) ", a->key, a->root);
+        printf ("(%s, %d) ", a->key, a->root);
         ShowAVLTree (a->left);
         ShowAVLTree (a->right);
     }
@@ -12,16 +13,16 @@ void ShowAVLTree (AVLTree a) {
 
 void GraphAVLTreeAux (AVLTree a, FILE *f) {
     if (a != NULL) {
-        fprintf (f, "%d [label=\"key:%d\nvalue:%d\"];\n", a->key, a->key, a->root);
-        if (a->left != NULL) fprintf (f, "%d -> %d;\n", a->key, a->left->key);
+        fprintf (f, "%s [label=\"key: %s\nvalue: %d\nsp: %d\"];\n", a->key, a->key, a->root, a->sp);
+        if (a->left != NULL) fprintf (f, "%s -> %s;\n", a->key, a->left->key);
         else if (a->right != NULL) {
             fprintf (f, "%d [shape=point];\n", (int) &(a->left));
-            fprintf (f, "%d -> %d;\n", a->key, (int) &(a->left));
+            fprintf (f, "%s -> %d;\n", a->key, (int) &(a->left));
         }
-        if (a->right != NULL) fprintf (f, "%d -> %d;\n", a->key, a->right->key);
+        if (a->right != NULL) fprintf (f, "%s -> %s;\n", a->key, a->right->key);
         else if (a->left != NULL){
             fprintf (f, "%d [shape=point];\n", (int) &(a->right));
-            fprintf (f, "%d -> %d;\n", a->key, (int) &(a->right));
+            fprintf (f, "%s -> %d;\n", a->key, (int) &(a->right));
         }
         GraphAVLTreeAux (a->left, f);
         GraphAVLTreeAux (a->right, f);
@@ -88,39 +89,61 @@ AVLTree Right (AVLTree a) {
     return r;
 }
 
-void insertAVL (AVLTree *a, int key, int x) {
+int size (AVLTree a) {
+    int r;
+    if (a == NULL) r = 0;
+    else r = 1 + size (a->left) + size(a->right);
+    return r;
+}
+
+void insertAVLaux (AVLTree *a, char *key, int x, int sp) {
     if ((*a) == NULL) {
         *a = (AVLTree) malloc (sizeof (struct node));
         (*a)->root = x;
-        (*a)->key = key;
+        (*a)->key = strdup(key);
+        (*a)->sp = sp;
         (*a)->height = 1;
         (*a)->left = NULL;
         (*a)->right = NULL;
     }
-    else if (key < (*a)->key) insertAVL (&((*a)->left), key, x);
-    else if (key > (*a)->key) insertAVL (&((*a)->right), key, x);
+    else if (strcmp(key, (*a)->key) < 0) insertAVLaux (&((*a)->left), key, x, sp);
+    else if (strcmp(key, (*a)->key) > 0) insertAVLaux (&((*a)->right), key, x, sp);
+    else (*a)->root = x;
 
     (*a)->height = 1 + max (height ((*a)->left), height ((*a)->right));
     int balance = get_balance (*a);
 
-    if (balance > 1 && key < (*a)->left->key) *a = Right (*a);
-    else if (balance > 1 && key > (*a)->left->key) {
+    if (balance > 1 && strcmp(key, (*a)->left->key) < 0) *a = Right (*a);
+    else if (balance > 1 && strcmp(key, (*a)->left->key) > 0) {
         (*a)->left = Left ((*a)->left);
         *a = Right (*a);
     }
-    else if (balance < -1 && key > (*a)->right->key) *a = Left (*a);
-    else if (balance < -1 && key < (*a)->right->key) {
+    else if (balance < -1 && strcmp(key, (*a)->right->key) > 0) *a = Left (*a);
+    else if (balance < -1 && strcmp(key, (*a)->right->key) < 0) {
         (*a)->right = Right ((*a)->right);
         *a = Left (*a);
     }
 }
 
+void insertAVL (AVLTree *a, char *key, int x) {
+    insertAVLaux (a, key, x, size(*a));
+}
+
 int isBSTree (AVLTree a) {
     int r;
     if (a == NULL) r = 1;
-    else if (a->left != NULL && a->left->key > a->key) r = 0;
-    else if (a->right != NULL && a->right->key < a->key) r = 0;
+    else if (a->left != NULL && strcmp(a->left->key, a->key) > 0) r = 0;
+    else if (a->right != NULL && strcmp(a->right->key, a->key) < 0) r = 0;
     else if (!isBSTree (a->right) || !isBSTree (a->left)) r = 0;
     else r = 1;
+    return r;
+}
+
+int searchAVLvalue (AVLTree a, char *key, int *x) {
+    int r = 1;
+    if (a == NULL) r = 0;
+    else if (strcmp (key, a->key) < 0) r = searchAVLvalue (a->left, key, x);
+    else if (strcmp (key, a->key) > 0) r = searchAVLvalue (a->right, key, x);
+    else *x = a->root; 
     return r;
 }

@@ -1,4 +1,6 @@
-int a = 10;
-int b;
+int a = 10 + 20;
+int b = 20 + a;
 int c = a + 20;
-int array[3];
+int array[20];
+array[7] = -31;
+int bruh = array[14];

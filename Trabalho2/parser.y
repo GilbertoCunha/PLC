@@ -1,9 +1,9 @@
 %{
 #include <stdio.h>
-#include <glib.h>
+#include "AVLTrees.h"
 
 int ERROR = 0;
-GHashTable *vars;
+AVLTree vars = NULL;
 int yylex();
 void yyerror(char *s);
 %}
@@ -30,18 +30,44 @@ L : Declarations
   ;
 
 Declarations : Declaration Declarations
-             |
+             | 
              ;
 
-Declaration : T_INT T_ID ';'                            { g_hash_table_insert(vars, $2, 0); }
-            | T_INT T_ID '=' Expression ';'             { if (!ERROR) g_hash_table_insert(vars, $2, $4); }
+Declaration : T_INT T_ID ';'                            { insertAVL(&vars, $2, 0); }
+            | T_INT T_ID '=' Expression ';'             { if (!ERROR) insertAVL(&vars, $2, $4); }
             | T_INT T_ID '[' T_NUM ']' ';'              { 
     if (!ERROR) {
         for (int i=0; i<$4; ++i) {
           char var_name[50];
-          snprintf(var_name, 50, "%s[%d]", $2, i);
+          snprintf(var_name, 50, "_%s%d", $2, i);
           printf ("%s\n", var_name);
-          g_hash_table_insert(vars, var_name, i);
+          insertAVL(&vars, var_name, i);
+        }
+    }
+}
+            | T_ID '=' T_NUM ';'                         {
+    if (!ERROR) {
+        int value; 
+        if (searchAVLvalue(vars, $1, &value)) insertAVL(&vars, $1, $3);
+        else {
+          ERROR = 1;
+          char error_str[100];
+          snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
+          yyerror(error_str);
+        }
+    }
+}     
+            | T_ID '[' T_NUM ']' '=' T_NUM ';'            {
+    if (!ERROR) {
+        int value; 
+        char varname[50];
+        snprintf (varname, 50, "_%s%d", $1, $3);
+        if (searchAVLvalue(vars, varname, &value)) insertAVL(&vars, varname, $6);
+        else {
+          ERROR = 1;
+          char error_str[100];
+          snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
+          yyerror(error_str);
         }
     }
 }
@@ -65,14 +91,28 @@ Term : Term '*' Factor  { if (!ERROR) $$ = $1 * $3; }
 
 Factor : T_NUM  { $$ = $1; } 
        | T_ID   { 
-    void *r = g_hash_table_lookup(vars, $1);
-    if (r == NULL) {
+    int r, value;
+    r = searchAVLvalue (vars, $1, &value);
+    if (r == 0) { 
       char error_str[100];
       snprintf (error_str, 100, "Variable \"%s\" has not yet been created\n", $1);
       yyerror(error_str);
       ERROR = 1;
     }
-    else $$ = r;
+    else $$ = value;
+}
+       | T_ID '[' T_NUM ']' {
+    int r, value;
+    char varname[50];
+    snprintf (varname, 50, "_%s%d", $1, $3);
+    r = searchAVLvalue (vars, varname, &value);
+    if (r == 0) { 
+      char error_str[100];
+      snprintf (error_str, 100, "Variable \"%s\" has not yet been created\n", $1);
+      yyerror(error_str);
+      ERROR = 1;
+    }
+    else $$ = value;
 }
        ;
 
@@ -93,25 +133,13 @@ void yyerror (char *s) {
     fprintf (stderr,"Error: %s\n",s);
 }
 
-void printHash (GHashTable *h) {
-    printf ("Variables:\n");
-    GList *keys = g_hash_table_get_keys(vars);
-    while (keys != NULL) {
-        printf ("    %s: %d\n", keys->data, g_hash_table_lookup(vars, keys->data));
-        keys = keys->next;
-    }
-}
-
 int main() {
-    int x = 3;
-    vars = g_hash_table_new(g_str_hash, g_int_equal);
     printf ("Started parsing\n");
     yyparse ();
-    printf ("Parsing COMPLETED\n");
+    printf ("Parsing COMPLETE\n");
     printf ("\n");
-    printHash (vars);
-
-    printf ("%s: %d\n", "array[1]", g_hash_table_lookup(vars, "array[1]"));
+    
+    GraphAVLTree (vars);
 
     return 0;
 }
