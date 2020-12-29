@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <glib.h>
 
+int ERROR = 0;
 GHashTable *vars;
 int yylex();
 void yyerror(char *s);
@@ -33,21 +34,33 @@ Declarations : Declaration Declarations
              ;
 
 Declaration : T_INT T_ID ';'                            { g_hash_table_insert(vars, $2, 0); }
-            | T_INT T_ID '=' Expression ';'             { g_hash_table_insert(vars, $2, $4); }
-            | T_INT T_ID '[' T_NUM ']' '=' List ';'
+            | T_INT T_ID '=' Expression ';'             { if (!ERROR) g_hash_table_insert(vars, $2, $4); }
+            | T_INT T_ID '[' T_NUM ']' ';'              { 
+    if (!ERROR) {
+        for (int i=0; i<$4; ++i) {
+          char var_name[50];
+          snprintf(var_name, 50, "%s[%d]", $2, i);
+          printf ("%s\n", var_name);
+          g_hash_table_insert(vars, var_name, i);
+        }
+    }
+}
             ;
 
-Expression : Expression '+' Term  { $$ = $1 + $3; }
-           | Expression '-' Term  { $$ = $1 - $3; }
-           | Term                 { $$ = $1; }
+Expression : Expression '+' Term  { if (!ERROR) $$ = $1 + $3; }
+           | Expression '-' Term  { if (!ERROR) $$ = $1 - $3; }
+           | Term                 { if (!ERROR) $$ = $1; }
            ;
 
-Term : Term '*' Factor  { $$ = $1 * $3; }
+Term : Term '*' Factor  { if (!ERROR) $$ = $1 * $3; }
      | Term '/' Factor  { 
-    if ($3 == 0) yyerror("Division by zero!\n");
-    else $$ = $1 / $3;
+    if ($3 == 0) {
+      yyerror("Division by zero!\n");
+      ERROR = 1;
+    }
+    else if (!ERROR) $$ = $1 / $3;
 }
-     | Factor           { $$ = $1; }
+     | Factor           { if (!ERROR) $$ = $1; }
      ;
 
 Factor : T_NUM  { $$ = $1; } 
@@ -55,9 +68,9 @@ Factor : T_NUM  { $$ = $1; }
     void *r = g_hash_table_lookup(vars, $1);
     if (r == NULL) {
       char error_str[100];
-      printf ("%s\n", $1);
-      asprintf(&error_str, "Variable \"%s\" has not been created\n", $1);
+      snprintf (error_str, 100, "Variable \"%s\" has not yet been created\n", $1);
       yyerror(error_str);
+      ERROR = 1;
     }
     else $$ = r;
 }
@@ -67,10 +80,10 @@ List : '[' ListAux ']'
      | '[' ']'
      ;
 
-ListAux : T_NUM ',' ListAux
-        | T_ID ',' ListAux
-        | T_NUM
-        | T_ID
+ListAux : Expression ',' ListAux
+        | Expression ',' ListAux
+        | Expression
+        | Expression
         ;
 %%
 
@@ -81,13 +94,12 @@ void yyerror (char *s) {
 }
 
 void printHash (GHashTable *h) {
-  printf ("Variables:\n");
+    printf ("Variables:\n");
     GList *keys = g_hash_table_get_keys(vars);
     while (keys != NULL) {
         printf ("    %s: %d\n", keys->data, g_hash_table_lookup(vars, keys->data));
         keys = keys->next;
     }
-    free (keys);
 }
 
 int main() {
@@ -98,6 +110,8 @@ int main() {
     printf ("Parsing COMPLETED\n");
     printf ("\n");
     printHash (vars);
+
+    printf ("%s: %d\n", "array[1]", g_hash_table_lookup(vars, "array[1]"));
 
     return 0;
 }
