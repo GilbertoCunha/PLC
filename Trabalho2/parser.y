@@ -11,6 +11,7 @@ void yyerror(char *s);
 %union {
   int num;
   char *id;
+  char *inst;
 }
 
 %token <id> T_ID
@@ -22,6 +23,7 @@ void yyerror(char *s);
 %token T_AND T_OR T_NOT
 %token T_ERROR
 
+%type <inst> Declaration
 %type <num> Factor Term Expression
 %start L
 
@@ -29,46 +31,50 @@ void yyerror(char *s);
 L : Declarations
   ;
 
-Declarations : Declaration Declarations
+Declarations : Declarations Declaration   { if (!ERROR) printf ("%s", $2); }
              | 
              ;
 
-Declaration : T_INT T_ID ';'                            { insertAVL(&vars, $2, 0); }
-            | T_INT T_ID '=' Expression ';'             { if (!ERROR) insertAVL(&vars, $2, $4); }
+Declaration : T_INT T_ID ';'                            { insertAVL(&vars, $2, 0); asprintf (&$$, "pushn 1\n"); }
+            | T_INT T_ID '=' Expression ';'             { if (!ERROR) { insertAVL(&vars, $2, $4); asprintf (&$$, "pushi %d\n", $4); } }
             | T_INT T_ID '[' T_NUM ']' ';'              { 
     if (!ERROR) {
         for (int i=0; i<$4; ++i) {
           char var_name[50];
           snprintf(var_name, 50, "_%s%d", $2, i);
-          printf ("%s\n", var_name);
-          insertAVL(&vars, var_name, i);
+          insertAVL(&vars, var_name, 0);
         }
+        asprintf (&$$, "pushn %d\n", $4);
     }
 }
             | T_ID '=' T_NUM ';'                         {
     if (!ERROR) {
-        int value; 
-        if (searchAVLvalue(vars, $1, &value)) insertAVL(&vars, $1, $3);
+        int sp; 
+        if (searchAVLsp(vars, $1, &sp)) insertAVL(&vars, $1, $3);
         else {
           ERROR = 1;
           char error_str[100];
           snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
           yyerror(error_str);
         }
+        asprintf (&$$, "pushi %d\nstoreg %d\n", $3, sp);
     }
 }     
             | T_ID '[' T_NUM ']' '=' T_NUM ';'            {
     if (!ERROR) {
-        int value; 
+        int sp;
         char varname[50];
         snprintf (varname, 50, "_%s%d", $1, $3);
-        if (searchAVLvalue(vars, varname, &value)) insertAVL(&vars, varname, $6);
+        int r = searchAVLsp(vars, varname, &sp);
+        if (r) insertAVL(&vars, varname, $6);
         else {
           ERROR = 1;
           char error_str[100];
           snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
           yyerror(error_str);
         }
+        printf ("varname: %s | sp_value: %d\n", varname, sp);
+        asprintf (&$$, "pushi %d\nstoreg %d\n", $6, sp);
     }
 }
             ;
@@ -91,9 +97,8 @@ Term : Term '*' Factor  { if (!ERROR) $$ = $1 * $3; }
 
 Factor : T_NUM  { $$ = $1; } 
        | T_ID   { 
-    int r, value;
-    r = searchAVLvalue (vars, $1, &value);
-    if (r == 0) { 
+    int value;
+    if (!searchAVLvalue (vars, $1, &value)) { 
       char error_str[100];
       snprintf (error_str, 100, "Variable \"%s\" has not yet been created\n", $1);
       yyerror(error_str);
@@ -102,11 +107,10 @@ Factor : T_NUM  { $$ = $1; }
     else $$ = value;
 }
        | T_ID '[' T_NUM ']' {
-    int r, value;
+    int value;
     char varname[50];
     snprintf (varname, 50, "_%s%d", $1, $3);
-    r = searchAVLvalue (vars, varname, &value);
-    if (r == 0) { 
+    if (!searchAVLvalue (vars, varname, &value)) { 
       char error_str[100];
       snprintf (error_str, 100, "Variable \"%s\" has not yet been created\n", $1);
       yyerror(error_str);

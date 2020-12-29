@@ -20,5 +20,6 @@ void insertAVLaux (AVLTree *a, char *key, int x, int sp);
 void insertAVL (AVLTree *a, char *key, int x);
 int isBSTree (AVLTree a);
 int searchAVLvalue (AVLTree a, char *key, int *x);
+int searchAVLsp (AVLTree a, char *key, int *x);
 
 #endif

@@ -144,6 +144,15 @@ int searchAVLvalue (AVLTree a, char *key, int *x) {
     if (a == NULL) r = 0;
     else if (strcmp (key, a->key) < 0) r = searchAVLvalue (a->left, key, x);
     else if (strcmp (key, a->key) > 0) r = searchAVLvalue (a->right, key, x);
-    else *x = a->root; 
+    else { printf ("AVL_value: %d\n", a->root); *x = a->root; } 
+    return r;
+}
+
+int searchAVLsp (AVLTree a, char *key, int *x) {
+    int r = 1;
+    if (a == NULL) r = 0;
+    else if (strcmp (key, a->key) < 0) r = searchAVLvalue (a->left, key, x);
+    else if (strcmp (key, a->key) > 0) r = searchAVLvalue (a->right, key, x);
+    else { printf ("AVL_sp: %d\n", a->sp); *x = a->sp; } 
     return r;
 }
