@@ -13,7 +13,7 @@ void ShowAVLTree (AVLTree a) {
 
 void GraphAVLTreeAux (AVLTree a, FILE *f) {
     if (a != NULL) {
-        fprintf (f, "%s [label=\"key: %s\nvalue: %d\nsp: %d\"];\n", a->key, a->key, a->root, a->sp);
+        fprintf (f, "%s [label=\"key: %s\nsp: %d\"];\n", a->key, a->key, a->root);
         if (a->left != NULL) fprintf (f, "%s -> %s;\n", a->key, a->left->key);
         else if (a->right != NULL) {
             fprintf (f, "%d [shape=point];\n", (int) &(a->left));
@@ -96,19 +96,17 @@ int size (AVLTree a) {
     return r;
 }
 
-void insertAVLaux (AVLTree *a, char *key, int x, int sp) {
+void insertAVL (AVLTree *a, char *key, int x) {
     if ((*a) == NULL) {
         *a = (AVLTree) malloc (sizeof (struct node));
         (*a)->root = x;
         (*a)->key = strdup(key);
-        (*a)->sp = sp;
         (*a)->height = 1;
         (*a)->left = NULL;
         (*a)->right = NULL;
     }
-    else if (strcmp(key, (*a)->key) < 0) insertAVLaux (&((*a)->left), key, x, sp);
-    else if (strcmp(key, (*a)->key) > 0) insertAVLaux (&((*a)->right), key, x, sp);
-    else (*a)->root = x;
+    else if (strcmp(key, (*a)->key) < 0) insertAVL (&((*a)->left), key, x);
+    else if (strcmp(key, (*a)->key) > 0) insertAVL (&((*a)->right), key, x);
 
     (*a)->height = 1 + max (height ((*a)->left), height ((*a)->right));
     int balance = get_balance (*a);
@@ -125,10 +123,6 @@ void insertAVLaux (AVLTree *a, char *key, int x, int sp) {
     }
 }
 
-void insertAVL (AVLTree *a, char *key, int x) {
-    insertAVLaux (a, key, x, size(*a));
-}
-
 int isBSTree (AVLTree a) {
     int r;
     if (a == NULL) r = 1;
@@ -139,20 +133,11 @@ int isBSTree (AVLTree a) {
     return r;
 }
 
-int searchAVLvalue (AVLTree a, char *key, int *x) {
+int searchAVL (AVLTree a, char *key, int *x) {
     int r = 1;
     if (a == NULL) r = 0;
-    else if (strcmp (key, a->key) < 0) r = searchAVLvalue (a->left, key, x);
-    else if (strcmp (key, a->key) > 0) r = searchAVLvalue (a->right, key, x);
+    else if (strcmp (key, a->key) < 0) r = searchAVL (a->left, key, x);
+    else if (strcmp (key, a->key) > 0) r = searchAVL (a->right, key, x);
     else *x = a->root;
-    return r;
-}
-
-int searchAVLsp (AVLTree a, char *key, int *x) {
-    int r = 1;
-    if (a == NULL) r = 0;
-    else if (strcmp (key, a->key) < 0) r = searchAVLsp (a->left, key, x);
-    else if (strcmp (key, a->key) > 0) r = searchAVLsp (a->right, key, x);
-    else *x = a->sp;
     return r;
 }
