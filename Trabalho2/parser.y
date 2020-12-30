@@ -47,7 +47,7 @@ Declaration : T_INT T_ID ';'                            { insertAVL(&vars, $2, 0
         asprintf (&$$, "pushn %d\n", $4);
     }
 }
-            | T_ID '=' T_NUM ';'                         {
+            | T_ID '=' Expression ';'                         {
     if (!ERROR) {
         int sp; 
         if (searchAVLsp(vars, $1, &sp)) insertAVL(&vars, $1, $3);
@@ -60,20 +60,18 @@ Declaration : T_INT T_ID ';'                            { insertAVL(&vars, $2, 0
         asprintf (&$$, "pushi %d\nstoreg %d\n", $3, sp);
     }
 }     
-            | T_ID '[' T_NUM ']' '=' T_NUM ';'            {
+            | T_ID '[' T_NUM ']' '=' Expression ';'            {
     if (!ERROR) {
         int sp;
         char varname[50];
         snprintf (varname, 50, "_%s%d", $1, $3);
-        int r = searchAVLsp(vars, varname, &sp);
-        if (r) insertAVL(&vars, varname, $6);
+        if (searchAVLsp(vars, varname, &sp)) insertAVL(&vars, varname, $6);
         else {
           ERROR = 1;
           char error_str[100];
           snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
           yyerror(error_str);
         }
-        printf ("varname: %s | sp_value: %d\n", varname, sp);
         asprintf (&$$, "pushi %d\nstoreg %d\n", $6, sp);
     }
 }
@@ -95,24 +93,25 @@ Term : Term '*' Factor  { if (!ERROR) $$ = $1 * $3; }
      | Factor           { if (!ERROR) $$ = $1; }
      ;
 
-Factor : T_NUM  { $$ = $1; } 
-       | T_ID   { 
-    int value;
-    if (!searchAVLvalue (vars, $1, &value)) { 
-      char error_str[100];
-      snprintf (error_str, 100, "Variable \"%s\" has not yet been created\n", $1);
-      yyerror(error_str);
-      ERROR = 1;
-    }
-    else $$ = value;
-}
+Factor : T_NUM              { $$ = $1; }
        | T_ID '[' T_NUM ']' {
     int value;
     char varname[50];
     snprintf (varname, 50, "_%s%d", $1, $3);
     if (!searchAVLvalue (vars, varname, &value)) { 
       char error_str[100];
-      snprintf (error_str, 100, "Variable \"%s\" has not yet been created\n", $1);
+      snprintf (varname, 50, "%s[%d]", $1, $3);
+      snprintf (error_str, 100, "Variable \"%s\" has not yet been declared\n", varname);
+      yyerror(error_str);
+      ERROR = 1;
+    }
+    else $$ = value;
+}
+       | T_ID   { 
+    int value;
+    if (!searchAVLvalue (vars, $1, &value)) { 
+      char error_str[100];
+      snprintf (error_str, 100, "Variable \"%s\" has not yet been deflared\n", $1);
       yyerror(error_str);
       ERROR = 1;
     }
@@ -141,7 +140,6 @@ int main() {
     printf ("Started parsing\n");
     yyparse ();
     printf ("Parsing COMPLETE\n");
-    printf ("\n");
     
     GraphAVLTree (vars);
 

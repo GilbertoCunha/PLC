@@ -65,10 +65,10 @@ int get_balance (AVLTree a) {
 
 AVLTree Left (AVLTree a) {
     AVLTree r = a->right;
-    AVLTree aux2 = r->left;
+    AVLTree aux = r->left;
 
     r->left = a;
-    a->right = aux2;
+    a->right = aux;
 
     a->height = 1 + max (height (a->left), height (a->right));
     r->height = 1 + max (height (r->left), height (r->right));
@@ -78,10 +78,10 @@ AVLTree Left (AVLTree a) {
 
 AVLTree Right (AVLTree a) {
     AVLTree r = a->left;
-    AVLTree aux2 = r->right;
+    AVLTree aux = r->right;
 
     r->right = a;
-    a->left = aux2;
+    a->left = aux;
 
     a->height = 1 + max (height (a->left), height (a->right));
     r->height = 1 + max (height (r->left), height (r->right));
@@ -113,12 +113,12 @@ void insertAVLaux (AVLTree *a, char *key, int x, int sp) {
     (*a)->height = 1 + max (height ((*a)->left), height ((*a)->right));
     int balance = get_balance (*a);
 
-    if (balance > 1 && strcmp(key, (*a)->left->key) < 0) *a = Right (*a);
+    if (balance > 1 && strcmp(key, (*a)->left->key) <= 0) *a = Right (*a);
     else if (balance > 1 && strcmp(key, (*a)->left->key) > 0) {
         (*a)->left = Left ((*a)->left);
         *a = Right (*a);
     }
-    else if (balance < -1 && strcmp(key, (*a)->right->key) > 0) *a = Left (*a);
+    else if (balance < -1 && strcmp(key, (*a)->right->key) >= 0) *a = Left (*a);
     else if (balance < -1 && strcmp(key, (*a)->right->key) < 0) {
         (*a)->right = Right ((*a)->right);
         *a = Left (*a);
@@ -144,15 +144,15 @@ int searchAVLvalue (AVLTree a, char *key, int *x) {
     if (a == NULL) r = 0;
     else if (strcmp (key, a->key) < 0) r = searchAVLvalue (a->left, key, x);
     else if (strcmp (key, a->key) > 0) r = searchAVLvalue (a->right, key, x);
-    else { printf ("AVL_value: %d\n", a->root); *x = a->root; } 
+    else *x = a->root;
     return r;
 }
 
 int searchAVLsp (AVLTree a, char *key, int *x) {
     int r = 1;
     if (a == NULL) r = 0;
-    else if (strcmp (key, a->key) < 0) r = searchAVLvalue (a->left, key, x);
-    else if (strcmp (key, a->key) > 0) r = searchAVLvalue (a->right, key, x);
-    else { printf ("AVL_sp: %d\n", a->sp); *x = a->sp; } 
+    else if (strcmp (key, a->key) < 0) r = searchAVLsp (a->left, key, x);
+    else if (strcmp (key, a->key) > 0) r = searchAVLsp (a->right, key, x);
+    else *x = a->sp;
     return r;
 }
