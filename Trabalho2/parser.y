@@ -22,6 +22,7 @@ void yyerror(char *s);
 %token T_START T_END
 %token T_IF T_ELSE
 %token T_AND T_OR T_NOT
+%token T_READ T_WRITE
 %token T_ERROR
 
 %type <inst> Declaration
@@ -29,8 +30,17 @@ void yyerror(char *s);
 %start L
 
 %%
-L : Declarations
+L : Declarations L
+  | Std L
+  |
   ;
+
+Std : T_INT T_ID '=' T_READ ')' ';'       { 
+    if (!ERROR) {
+        fprintf (vm, "read\natoi\n"); 
+    
+    }
+} 
 
 Declarations : Declarations Declaration   { if (!ERROR) fprintf (vm, "%s", $2); }
              | 
@@ -119,16 +129,6 @@ Factor : T_NUM              { $$ = $1; }
     else $$ = value;
 }
        ;
-
-List : '[' ListAux ']'
-     | '[' ']'
-     ;
-
-ListAux : Expression ',' ListAux
-        | Expression ',' ListAux
-        | Expression
-        | Expression
-        ;
 %%
 
 #include "lex.yy.c"

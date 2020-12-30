@@ -24,7 +24,9 @@ SYMBS [\+\-\*\/\{\}\[\]\(\)!<>\\\;]
 [ ]or[ ]                      { return T_OR; } 
 [ ]and[ ]                     { return T_AND; } 
 [ ]not                        { return T_NOT; } 
-\-*{DIGIT}+                      { yylval.num = atoi(yytext); return T_NUM; } 
+read\ *\(                     { return T_READ; }
+write\ *\(                    { return T_WRITE; }
+\-*{DIGIT}+                   { yylval.num = atoi(yytext); return T_NUM; } 
 {LETTER}+_*{LETTER}*{DIGIT}*  { yylval.id = strdup(yytext); return T_ID; } 
 \"                            { return yytext[0]; BEGIN STRING; } 
 [\ \n\t\r]                    { ; } 
