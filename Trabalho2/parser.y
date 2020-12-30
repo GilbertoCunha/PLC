@@ -4,6 +4,7 @@
 
 int ERROR = 0;
 AVLTree vars = NULL;
+FILE *vm;
 int yylex();
 void yyerror(char *s);
 %}
@@ -31,7 +32,7 @@ void yyerror(char *s);
 L : Declarations
   ;
 
-Declarations : Declarations Declaration   { if (!ERROR) printf ("%s", $2); }
+Declarations : Declarations Declaration   { if (!ERROR) fprintf (vm, "%s", $2); }
              | 
              ;
 
@@ -137,11 +138,12 @@ void yyerror (char *s) {
 }
 
 int main() {
+    vm = fopen ("program.vm", "w");
     printf ("Started parsing\n");
     yyparse ();
     printf ("Parsing COMPLETE\n");
     
     GraphAVLTree (vars);
-
+    fclose (vm);
     return 0;
 }
