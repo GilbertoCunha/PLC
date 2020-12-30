@@ -1,11 +1,13 @@
 %{
 #include <stdio.h>
 #include "AVLTrees.h"
+#include "aux.h"
 
 int ERROR = 0;
 int var_count = 0;
 AVLTree vars = NULL;
 FILE *vm;
+
 int yylex();
 void yyerror(char *s);
 %}
@@ -39,77 +41,60 @@ Declarations : Declarations Declaration   { if (!ERROR) fprintf (vm, "%s", $2); 
              | 
              ;
 
-Declaration : T_INT T_ID ';'                            { insertAVL(&vars, $2, 0); asprintf (&$$, "pushn 1\n"); }
-            | T_INT T_ID '=' Expression ';'             { 
-    if (!ERROR) { 
-      insertAVL(&vars, $2, var_count); 
-      asprintf (&$$, "pushn 1\n%sstoreg %d\n", $4, var_count++); 
-    } 
-}
-            | T_INT T_ID '[' T_NUM ']' ';'              { 
+Declaration : T_INT T_ID ';'              { 
     if (!ERROR) {
-        for (int i=0; i<$4; ++i) {
-          char var_name[50];
-          snprintf (var_name, 50, "_%s%d", $2, i);
-          insertAVL (&vars, var_name, var_count++);
+        int size = array_size ($2);
+        char *varname;
+        for (int i=0; i<size; ++i) {
+          varname = strdup (array_pos_name($2, i));
+          insertAVL (&vars, varname, var_count++);
         }
-        asprintf (&$$, "pushn %d\n", $4);
+        asprintf (&$$, "pushn %d\n", size);
+    }
+}   
+            | T_INT T_ID '=' Expression ';'            {
+    char varname[50];
+    T_ID_to_str ($2, varname);
+    if (strchr (varname, "[") != NULL) ERROR = 1;
+    if (!ERROR) {
+        insertAVL (&vars, varname, var_count);
+        asprintf (&$$, "pushn 1\n%sstoreg %d\n", $4, var_count++);
     }
 }
-            | T_ID '=' Expression ';'                         {
+            | T_ID '=' Expression ';'            {
     if (!ERROR) {
-        int sp; 
-        if (!searchAVL(vars, $1, &sp)) {
+        int sp;
+        char varname[50];
+        T_ID_to_str ($1, varname);
+        if (!searchAVL(vars, varname, &sp)) {
           ERROR = 1;
-          char error_str[100];
-          snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
+          char *error_str;
+          asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
           yyerror(error_str);
         }
         else asprintf (&$$, "%sstoreg %d\n", $3, sp);
     }
-}     
-            | T_ID '[' T_NUM ']' '=' Expression ';'            {
-    if (!ERROR) {
-        int sp;
-        char varname[50];
-        snprintf (varname, 50, "_%s%d", $1, $3);
-        if (!searchAVL(vars, varname, &sp)) {
-          ERROR = 1;
-          char error_str[100];
-          snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
-          yyerror(error_str);
-        }
-        else asprintf (&$$, "%sstoreg %d\n", $6, sp);
-    }
 }
             | T_INT T_ID '=' T_READ ')' ';'                     {
+    if (strchr ($2, "[") != NULL) ERROR = 1;
     if (!ERROR) {
-        insertAVL (&vars, $2, var_count);
+        char varname[50];
+        T_ID_to_str ($2, varname);
+        insertAVL (&vars, varname, var_count);
         asprintf (&$$, "pushn 1\nread\natoi\nstoreg %d\n", var_count++);
     }
+    else yyerror ("Can't assign integer to array\n");
 }
             | T_ID '=' T_READ ')' ';'                     {
     if (!ERROR) {
         int sp;
-        if (!searchAVL(vars, $1, &sp)) {
-          ERROR = 1;
-          char error_str[100];
-          snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
-          yyerror(error_str);
-        }
-        else asprintf (&$$, "read\natoi\nstoreg %d\n", sp);
-    }
-}
-            | T_ID '[' T_NUM ']' '=' T_READ ')' ';'                     {
-    if (!ERROR) {
-        int sp;
         char varname[50];
-        snprintf (varname, 50, "_%s%d", $1, $3);
-        if (!searchAVL(vars, varname, &sp)) {
-          ERROR = 1;
-          char error_str[100];
-          snprintf (error_str, 100, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
-          yyerror(error_str);
+        T_ID_to_str ($1, varname);
+        if (!searchAVL (vars, varname, &sp)) { 
+            char *error_str;
+            asprintf (&error_str, "Variable \"%s\" has not yet been declared\n", $1);
+            yyerror(error_str);
+            ERROR = 1;
         }
         else asprintf (&$$, "read\natoi\nstoreg %d\n", sp);
     }
@@ -132,27 +117,16 @@ Term : Term '*' Factor  { if (!ERROR) asprintf (&$$, "%s%smul\n", $1, $3); }
      | Factor           { if (!ERROR) asprintf (&$$, "%s", $1); }
      ;
 
-Factor : T_NUM              { asprintf (&$$, "pushi %d\n", $1); }
-       | T_ID '[' T_NUM ']' {
+Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
+       | T_ID    {
     int sp;
     char varname[50];
-    snprintf (varname, 50, "_%s%d", $1, $3);
+    T_ID_to_str ($1, varname);
     if (!searchAVL (vars, varname, &sp)) { 
-      char error_str[100];
-      snprintf (varname, 50, "%s[%d]", $1, $3);
-      snprintf (error_str, 100, "Variable \"%s\" has not yet been declared\n", varname);
-      yyerror(error_str);
-      ERROR = 1;
-    }
-    else asprintf(&$$, "pushg %d\n", sp);
-}
-       | T_ID   { 
-    int sp;
-    if (!searchAVL (vars, $1, &sp)) { 
-      char error_str[100];
-      snprintf (error_str, 100, "Variable \"%s\" has not yet been deflared\n", $1);
-      yyerror(error_str);
-      ERROR = 1;
+        char *error_str;
+        asprintf (&error_str, "Variable \"%s\" has not yet been declared\n", $1);
+        yyerror(error_str);
+        ERROR = 1;
     }
     else asprintf(&$$, "pushg %d\n", sp);
 }
@@ -167,6 +141,7 @@ void yyerror (char *s) {
 
 int main() {
     vm = fopen ("program.vm", "w");
+
     printf ("Started parsing\n");
     yyparse ();
     printf ("Parsing COMPLETE\n");
