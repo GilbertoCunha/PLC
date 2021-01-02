@@ -7,7 +7,7 @@ DIGIT [0-9]
 LETTER [a-zA-Z]
 SYMBS [\+\-\*\/\{\}\[\]\(\)!<>\\\;]
 
-%x STRING
+%x STRING FSTRING
 %option noyywrap
 
 %%
