@@ -1,9 +1,8 @@
 compile: lexer.l parser.y AVLTrees.h AVLTrees.c
-	@yacc -d parser.y -Wcounterexamples
+	@yacc -d parser.y
 	@flex lexer.l
 	@gcc AVLTrees.c aux.c y.tab.c `pkg-config --cflags --libs glib-2.0` -w
-	@./a.out < declaration_test.txt
-	@vms -g program.vm
+	@./a.out
 
 lexer: lexer.l
 	@flex aux_lexer.l

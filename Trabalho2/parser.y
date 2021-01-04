@@ -29,7 +29,7 @@ void yyerror(char *s);
 %token T_ERROR
 
 %type <inst> Declaration
-%type <inst> Instruction Atribution
+%type <inst> Instruction Atribution Write String
 %type <inst> Par Factor Term Expression
 %start L
 
@@ -46,7 +46,7 @@ Instruction : Atribution    { if (!ERROR) asprintf (&$$, "%s", $1); }
             | Write         { if (!ERROR) asprintf (&$$, "%s", $1); }
             ;
 
-Write : T_WRITE '"' String '"' ')'      { if (!ERROR) asprintf (&$$, "pushs %s\nwrites\n", $2); }
+Write : T_WRITE '"' String '"' ')'      { if (!ERROR) asprintf (&$$, "pushs %s\nwrites\n", $3); }
       | T_WRITE Expression ')'          { if (!ERROR) asprintf (&$$, "%swritei\n", $2); }
       ;
 
