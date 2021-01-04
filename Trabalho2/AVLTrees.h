@@ -3,7 +3,7 @@
 
 typedef struct node {
     int root;
-    char *key;
+    char *key, *type;
     int height;
     struct node *left;
     struct node *right;
@@ -15,7 +15,7 @@ int max (int a, int b);
 int height (AVLTree a);
 AVLTree Left (AVLTree a);
 AVLTree Right (AVLTree a);
-void insertAVL (AVLTree *a, char *key, int x);
+void insertAVL (AVLTree *a, char *key, char *type, int x);
 int isBSTree (AVLTree a);
 int searchAVL (AVLTree a, char *key, int *x);
 

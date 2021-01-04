@@ -13,7 +13,7 @@ void ShowAVLTree (AVLTree a) {
 
 void GraphAVLTreeAux (AVLTree a, FILE *f) {
     if (a != NULL) {
-        fprintf (f, "%s [label=\"key: %s\nsp: %d\"];\n", a->key, a->key, a->root);
+        fprintf (f, "%s [label=\"key: %s\nsp: %d\ntype: %s\"];\n", a->key, a->key, a->root, a->type);
         if (a->left != NULL) fprintf (f, "%s -> %s;\n", a->key, a->left->key);
         else if (a->right != NULL) {
             fprintf (f, "%d [shape=point];\n", (int) &(a->left));
@@ -96,17 +96,18 @@ int size (AVLTree a) {
     return r;
 }
 
-void insertAVL (AVLTree *a, char *key, int x) {
+void insertAVL (AVLTree *a, char *key, char *type, int x) {
     if ((*a) == NULL) {
         *a = (AVLTree) malloc (sizeof (struct node));
         (*a)->root = x;
         (*a)->key = strdup(key);
+        (*a)->type = strdup(type);
         (*a)->height = 1;
         (*a)->left = NULL;
         (*a)->right = NULL;
     }
-    else if (strcmp(key, (*a)->key) < 0) insertAVL (&((*a)->left), key, x);
-    else if (strcmp(key, (*a)->key) > 0) insertAVL (&((*a)->right), key, x);
+    else if (strcmp(key, (*a)->key) < 0) insertAVL (&((*a)->left), key, type, x);
+    else if (strcmp(key, (*a)->key) > 0) insertAVL (&((*a)->right), key, type, x);
 
     (*a)->height = 1 + max (height ((*a)->left), height ((*a)->right));
     int balance = get_balance (*a);

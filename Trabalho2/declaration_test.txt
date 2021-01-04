@@ -4,4 +4,6 @@ int c = b / 10;
 int array[20];
 int bruh = read();
 
+%
 array[7] = a * (b - c / 3);
+%

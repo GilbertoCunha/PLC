@@ -3,46 +3,26 @@
 #include <string.h>
 #include "aux.h"
 
-void remChar (char *s, char c) {
-    int j, n = strlen(s); 
-    for (int i=j=0; i<n; i++) 
-       if (s[i] != c) 
-          s[j++] = s[i]; 
-      
-    s[j] = '\0';
-}
-
-int array_size (char *s) {
-    int res=0, j=0, n=strlen(s);
-    char r[n];
-    for (int i=0; i<n; ++i) 
-       if (s[i] == '[') {
-         res=1;
-         for (j=0; s[i+j+1]!=']'; ++j) r[j] = s[i+j+1];
-         break;
-       }
-    r[j] = '\0';
-    if (res) res = atoi(r);
-    else res = 1;
-    return res;
-}
-
-char *array_pos_name (char *s, int pos) {
-    int res=0, j=0, n=strlen(s);
-    char r[n], *f = malloc (n * sizeof (char));
-    for (j=0; j<n && s[j]!='['; ++j)
-       r[j] = s[j];
-    r[j] = '\0';
-    snprintf (f, n, "_%s%d", r, pos);
-    return f;
-}
-
-void T_ID_to_str (char *s, char *varname) {
-    char aux[50];
-    strcpy (aux, s);
-    if (strchr (s, '[') != NULL) {
-        remChar (aux, '['); remChar (aux, ']');
-        snprintf (varname, 50, "_%s", aux);
+int array_size(char *src) {
+    int r;
+    int size, end;
+    char *aux = strdup(src);
+    for (size=0; src[size]!='\0' && src[size]!='['; ++size);
+    for (end=size; src[end]!='\0'; end++)
+        if (src[end]!='[' && src[end]!=']') 
+            aux[end-size-1] = src[end];
+    if (size == end) r = -1;
+    else {
+        aux[end] = '\0';
+        r = atoi (aux);
     }
-    else snprintf (varname, 50, "%s", s);
+    return r;
+}
+
+char *get_varname(char *src) {
+    char *dest = strdup(src);
+    int i;
+    for (i=0; src[i]!='\0' && src[i]!='['; ++i);
+    dest[i] = '\0';
+    return dest;
 }
