@@ -6,4 +6,6 @@ int bruh = read();
 
 %
 array[7] = a * (b - c / 3);
+write(420);
+write("Cenas fixes {420 + (a - b) / 2}");
 %

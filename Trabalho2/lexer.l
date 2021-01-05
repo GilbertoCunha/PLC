@@ -5,10 +5,12 @@
 
 DIGIT [0-9]
 LETTER [a-zA-Z]
+OPERATION [\+\(\)\*\-\/]
 SYMBS [\+\-\*\/\{\}\[\]\(\)!<>\\\;]
 
 %x STRING FSTRING
 %option noyywrap
+%option yylineno
 
 %%
 ^int\                                       { return T_INT;  } 
@@ -29,14 +31,18 @@ write\ *\(                                  { return T_WRITE; }
 {DIGIT}+                                    { yylval.num = atoi(yytext); return T_NUM; } 
 {LETTER}+_*{LETTER}*{DIGIT}*\[{DIGIT}+\]    { yylval.id = strdup(yytext); return T_ID; } 
 {LETTER}+_*{LETTER}*{DIGIT}*                { yylval.id = strdup(yytext); return T_ID; } 
-\"                                          { return yytext[0]; BEGIN STRING; } 
+\"                                          { BEGIN STRING; return yytext[0]; } 
 [\ \n\t\r]                                  { ; } 
 .                                           { return yytext[0]; } 
 
-<STRING>\"                                  { return yytext[0]; BEGIN INITIAL; } 
-<STRING>\{{LETTER}+\}                       { yytext[strlen(yytext)-1] = '\0'; yylval.id = strdup(yytext+1); return T_ID; }
-<STRING>\{{LETTER}+                         { yytext[strlen(yytext)-1] = '\0'; yylval.id = strdup(yytext+1); return T_ID; }
-<STRING>\[{LETTER}+\]\}                     { yytext[strlen(yytext)-1] = '\0'; yylval.id = strdup(yytext+1); return T_ID; }
-<STRING>\[{DIGIT}+\]\}                      { yytext[strlen(yytext)-2] = '\0'; yylval.num = atoi(yytext+2); return T_NUM; }
-<STRING>(.|\n)                              { return yytext[0]; } 
+<STRING>\"                                          { BEGIN INITIAL; return yytext[0]; }
+<STRING>\{                                          { BEGIN FSTRING; return yytext[0]; }
+<STRING>[^\{\"]*                                    { yylval.id = strdup(yytext); return T_STR; }
+
+<FSTRING>\}                                         { BEGIN STRING; return yytext[0]; }
+<FSTRING>{OPERATION}                                { return yytext[0]; }
+<FSTRING>{DIGIT}+                                   { yylval.num = atoi(yytext); return T_NUM; }
+<FSTRING>{LETTER}+_*{LETTER}*{DIGIT}*\[{DIGIT}+\]   { yylval.id = strdup(yytext); return T_ID; } 
+<FSTRING>{LETTER}+_*{LETTER}*{DIGIT}*               { yylval.id = strdup(yytext); return T_ID; }
+<FSTRING>(.|\n)                                     { ; }
 %%

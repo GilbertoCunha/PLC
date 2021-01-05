@@ -11,6 +11,7 @@ FILE *vm;
 int yylex();
 void yyerror(char *s);
 %}
+%locations
 
 %union {
   int num;
@@ -20,6 +21,7 @@ void yyerror(char *s);
 
 %token <id> T_ID
 %token <num> T_NUM
+%token <id> T_STR
 %token T_INT
 %token T_FOR
 %token T_START T_END
@@ -30,11 +32,11 @@ void yyerror(char *s);
 
 %type <inst> Declarations Declaration
 %type <inst> Instructions Instruction Atribution Write
-%type <inst> Par Factor Term Expression String
+%type <inst> Par Factor Term Expression FString
 %start L
 
 %%
-L : Declarations '%' Instructions '%' {if (!ERROR) fprintf (vm, "%sstart\n%s", $1, $3); }
+L : Declarations '%' Instructions '%' {if (!ERROR) fprintf (vm, "%sstart\n%sstop", $1, $3); }
   |
   ;
 
@@ -46,12 +48,14 @@ Instruction : Atribution    { if (!ERROR) asprintf (&$$, "%s", $1); }
             | Write         { if (!ERROR) asprintf (&$$, "%s", $1); }
             ;
 
-Write : T_WRITE '"' String '"' ')'      { if (!ERROR) asprintf (&$$, "pushs %s\nwrites\n", $3); }
-      | T_WRITE Expression ')'          { if (!ERROR) asprintf (&$$, "%swritei\n", $2); }
+Write : T_WRITE '"' FString '"' ')' ';'   { if (!ERROR) asprintf (&$$, "%swrites\n", $3); }
+      | T_WRITE Expression ')' ';'        { if (!ERROR) asprintf (&$$, "%swritei\n", $2); }
       ;
 
-String : 
-       ;
+FString : FString '{' Expression '}'     { if (!ERROR) asprintf (&$$, "%s%sstri\nconcat\n", $1, $3); }
+        | FString T_STR                  { if (!ERROR) asprintf (&$$, "%spushs %s\nconcat\n", $1, $2); }
+        |                                { if (!ERROR) asprintf (&$$, "%spushs %s\n", ""); }
+        ;
 
 Atribution : T_ID '=' Expression ';'      {
     if (!ERROR) {
@@ -176,7 +180,7 @@ Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
 #include "lex.yy.c"
 
 void yyerror (char *s) {
-    fprintf (stderr,"Error: %s\n",s);
+    fprintf (stderr,"Line: %d | Error: %s\n", yylineno, s);
 }
 
 int main() {
