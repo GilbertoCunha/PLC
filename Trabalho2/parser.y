@@ -48,13 +48,14 @@ Instruction : Atribution    { if (!ERROR) asprintf (&$$, "%s", $1); }
             | Write         { if (!ERROR) asprintf (&$$, "%s", $1); }
             ;
 
-Write : T_WRITE '"' FString '"' ')' ';'   { if (!ERROR) asprintf (&$$, "%swrites\n", $3); }
-      | T_WRITE Expression ')' ';'        { if (!ERROR) asprintf (&$$, "%swritei\n", $2); }
+Write : T_WRITE '"' FString '"' ')' ';'   { if (!ERROR) asprintf (&$$, "%s", $3, "\n"); }
+      | T_WRITE Expression ')' ';'        { if (!ERROR) asprintf (&$$, "%swritei\n", $2, "\n"); }
       ;
 
-FString : FString '{' Expression '}'     { if (!ERROR) asprintf (&$$, "%s%sstri\nconcat\n", $1, $3); }
-        | FString T_STR                  { if (!ERROR) asprintf (&$$, "%spushs %s\nconcat\n", $1, $2); }
-        |                                { if (!ERROR) asprintf (&$$, "%spushs %s\n", ""); }
+FString : FString '{' Expression '}'     { if (!ERROR) asprintf (&$$, "%s%swritei\n", $1, $3); }
+        | FString T_STR                  { if (!ERROR) asprintf (&$$, "%spushs \"%s\"\nwrites\n", $1, $2); }
+        | '{' Expression '}'             { if (!ERROR) asprintf (&$$, "%swritei\n", $2); }
+        | T_STR                          { if (!ERROR) asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
 Atribution : T_ID '=' Expression ';'      {
