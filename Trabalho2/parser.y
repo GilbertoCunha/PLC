@@ -49,7 +49,6 @@ Instruction : Atribution    { asprintf (&$$, "%s", $1); }
             ;
 
 Write : T_WRITE '"' FString '"' ')' ';'   { asprintf (&$$, "%s", $3, "\n"); }
-      | T_WRITE Expression ')' ';'        { asprintf (&$$, "%swritei\n", $2, "\n"); }
       ;
 
 FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3); }
@@ -131,9 +130,15 @@ Declaration : T_INT T_ID ';'              {
 }
             ;
 
-Expression : Expression '+' Term  { asprintf (&$$, "%s%sadd\n", $1, $3); }
-           | Expression '-' Term  { asprintf (&$$, "%s%ssub\n", $1, $3); }
-           | Term                 { asprintf (&$$, "%s", $1); }
+Expression : Expression '=' '=' Expression  { asprintf (&$$, "%s%sequal\n", $1, $4); }
+           | Expression '!' '=' Expression  { asprintf (&$$, "%s%sequal\nnot\n", $1, $4); }
+           | Expression '>' '=' Expression  { asprintf (&$$, "%s%ssupeq\n", $1, $4); }
+           | Expression '<' '=' Expression  { asprintf (&$$, "%s%sinfeq\n", $1, $4); }
+           | Expression '>' Expression      { asprintf (&$$, "%s%ssup\n", $1, $3); }
+           | Expression '<' Expression      { asprintf (&$$, "%s%sinf\n", $1, $3); }
+           | Expression '+' Term            { asprintf (&$$, "%s%sadd\n", $1, $3); }
+           | Expression '-' Term            { asprintf (&$$, "%s%ssub\n", $1, $3); }
+           | Term                           { asprintf (&$$, "%s", $1); }
            ;
 
 Term : Term '*' Par  { asprintf (&$$, "%s%smul\n", $1, $3); }
@@ -144,7 +149,11 @@ Term : Term '*' Par  { asprintf (&$$, "%s%smul\n", $1, $3); }
     }
     else asprintf (&$$, "%s%sdiv\n", $1, $3);
 }
-     | Par           { asprintf (&$$, "%s", $1); }
+     | Term '%' Par     { asprintf (&$$, "%s%smod\n", $1, $3); }
+     | Term T_AND Par   { asprintf (&$$, "%snot\nnot\n%snot\nnot\nmul\n", $1, $3); }
+     | Term T_OR Par    { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
+     | T_NOT Par        { asprintf (&$$, "%snot\n", $2); }
+     | Par              { asprintf (&$$, "%s", $1); }
      ;
 
 Par : '(' Expression ')'    { asprintf (&$$, "%s", $2); }

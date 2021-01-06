@@ -5,7 +5,7 @@
 
 DIGIT [0-9]
 LETTER [a-zA-Z]
-OPERATION [\+\(\)\*\-\/]
+OPERATION [\+\(\)\*\-\/\%]
 SYMBS [\+\-\*\/\{\}\[\]\(\)!<>\\\;]
 
 %x STRING FSTRING
@@ -44,5 +44,6 @@ write\ *\(                                  { return T_WRITE; }
 <FSTRING>{DIGIT}+                                   { yylval.num = atoi(yytext); return T_NUM; }
 <FSTRING>{LETTER}+_*{LETTER}*{DIGIT}*\[{DIGIT}+\]   { yylval.id = strdup(yytext); return T_ID; } 
 <FSTRING>{LETTER}+_*{LETTER}*{DIGIT}*               { yylval.id = strdup(yytext); return T_ID; }
-<FSTRING>(.|\n)                                     { ; }
+<FSTRING>[ ]                                        { ; }
+<FSTRING>(.|\n)                                     { return yytext[0]; }
 %%
