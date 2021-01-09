@@ -50,18 +50,19 @@ Instructions : Instructions Instruction { asprintf (&$$, "%s%s", $1, $2); }
              |                          { asprintf (&$$, "%s", ""); }
              ;
 
-Instruction : Atribution    { asprintf (&$$, "%s", $1); }
-            | Write         { asprintf (&$$, "%s", $1); }
-            | Conditional   { asprintf (&$$, "%s", $1); }
+Instruction : Atribution     { asprintf (&$$, "%s", $1); }
+            | Write          { asprintf (&$$, "%s", $1); }
+            | Conditional    { asprintf (&$$, "%s", $1); }
+            | '\n'           { asprintf (&$$, "%s", ""); }
             ;
 
-Conditional : T_IF Expression T_START Instructions T_END { 
-    asprintf (&$$, "%sjz else%d\n%selse%d:\n", $2, else_count, $4, else_count);
+Conditional : T_IF Expression T_START '\n' Instructions T_END '\n' { 
+    asprintf (&$$, "%sjz else%d\n%selse%d:\n", $2, else_count, $5, else_count);
     else_count++;
 }
             ;
 
-Write : T_WRITE '(' '"' FString '"' ')' ';'   { asprintf (&$$, "%s", $4, "\n"); }
+Write : T_WRITE '(' '"' FString '"' ')' '\n'   { asprintf (&$$, "%s", $4, "\n"); }
       ;
 
 FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3); }
@@ -70,7 +71,7 @@ FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3
         | T_STR                          { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression ';'      {
+Atribution : T_ID '=' Expression '\n'      {
     int sp;
     char *varname = get_varname($1);
     int index = array_size($1);
@@ -83,7 +84,7 @@ Atribution : T_ID '=' Expression ';'      {
     else if (index == -1) asprintf (&$$, "%sstoreg %d\n", $3, sp);
     else asprintf (&$$, "pushgp\npushi %d\npadd\npushi %d\n%sstoren\n", sp, index, $3);
 }
-            | T_ID '=' T_READ '(' ')' ';'    {
+            | T_ID '=' T_READ '(' ')' '\n'    {
     int sp;
     char *varname = get_varname($1);
     int size = array_size($1);
@@ -104,7 +105,7 @@ Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
              |                            { asprintf (&$$, "%s", ""); }
              ;
 
-Declaration : T_INT T_ID ';'              {
+Declaration : T_INT T_ID '\n'              {
     int size = array_size ($2);
     char *varname = get_varname($2);
     if (size == -1) {
@@ -117,7 +118,7 @@ Declaration : T_INT T_ID ';'              {
         var_count += size;
     }
 }   
-            | T_INT T_ID '=' Expression ';'            {
+            | T_INT T_ID '=' Expression '\n'            {
     int size = array_size($2);
     char *varname = get_varname($2);
     if (size == -1) {
@@ -129,7 +130,7 @@ Declaration : T_INT T_ID ';'              {
         ERROR = 1;
     }
 }
-            | T_INT T_ID '=' T_READ '(' ')' ';'                     {
+            | T_INT T_ID '=' T_READ '(' ')' '\n'        {
     int size = array_size($2);
     char *varname = get_varname($2);
     if (size == -1) {
@@ -141,6 +142,7 @@ Declaration : T_INT T_ID ';'              {
         ERROR = 1;
     }
 }
+            | '\n'            { asprintf (&$$, "%s", ""); }
             ;
 
 Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, $3); }

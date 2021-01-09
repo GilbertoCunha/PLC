@@ -28,12 +28,12 @@ write                                       { return T_WRITE; }
 {LETTER}+_*{LETTER}*{DIGIT}*\[{DIGIT}+\]    { yylval.id = strdup(yytext); return T_ID; } 
 {LETTER}+_*{LETTER}*{DIGIT}*                { yylval.id = strdup(yytext); return T_ID; } 
 \"                                          { BEGIN STRING; return yytext[0]; } 
-[\ \n\t\r]                                  { ; }
+[\ \t\r]                                    { ; }
 \=\=                                        { return T_EQ; }
 \!\=                                        { return T_NEQ; }
 \<\=                                        { return T_LE; }
 \>\=                                        { return T_GE; }
-.                                           { return yytext[0]; } 
+(.|\n)                                      { return yytext[0]; } 
 
 <STRING>\"                                          { BEGIN INITIAL; return yytext[0]; }
 <STRING>\{                                          { BEGIN FSTRING; return yytext[0]; }
