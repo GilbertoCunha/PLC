@@ -1,3 +1,12 @@
+"""
+Este é um programa exemplo da nossa linguagem
+
+Autores:
+Gilberto Cunha - MIEFis
+Tomás Carneiro - MIEFis
+"""
+
+# Deve começar pelas declarações
 int a = 2 * (1 + 2)
 int b = 20 + a
 int c = b % 10
@@ -5,13 +14,17 @@ int array[20]
 int bruh
 
 %
+# As intruções devem começar com um % e terminar com outro
 bruh = read()
-array[21] = a * (b - c / 3)
+bruh = array[10]
+array[12] = a * (b - c / 3)
 write("Cenas fixes {420 + (a - b) / 2}")
 a = 10+20 >= 15%2
+
 if a == a :: 
     a = 420
 :;
+
 b = 2 == 2
 c = (0 and 0) or (0 and 1) or (1 and 0) or not (1 and 1)
 bruh = not (a and c)

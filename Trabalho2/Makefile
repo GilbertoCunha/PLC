@@ -12,6 +12,14 @@ graphAVL: GraphAVL.c AVLTrees.c AVLTrees.h
 	@gcc -w AVLTrees.c GraphAVL.c
 	@./a.out
 
+parser_error:
+	@rm *.out
+	@rm lex.yy.c
+	@rm y.tab.h
+	@rm y.tab.c
+	@rm *.dot
+	@rm *.vm
+
 clean:
 	@rm *.out
 	@rm lex.yy.c

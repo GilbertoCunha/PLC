@@ -13,7 +13,7 @@ void ShowAVLTree (AVLTree a) {
 
 void GraphAVLTreeAux (AVLTree a, FILE *f) {
     if (a != NULL) {
-        fprintf (f, "%s [label=\"key: %s\nsp: %d\ntype: %s\"];\n", a->key, a->key, a->root, a->type);
+        fprintf (f, "%s [label=\"key: %s\nsp: %d\ntype: %s\nsize: %d\"];\n", a->key, a->key, a->root, a->type, a->size);
         if (a->left != NULL) fprintf (f, "%s -> %s;\n", a->key, a->left->key);
         else if (a->right != NULL) {
             fprintf (f, "%d [shape=point];\n", (int) &(a->left));
@@ -96,18 +96,19 @@ int size (AVLTree a) {
     return r;
 }
 
-void insertAVL (AVLTree *a, char *key, char *type, int x) {
+void insertAVL (AVLTree *a, char *key, char *type, int size, int x) {
     if ((*a) == NULL) {
         *a = (AVLTree) malloc (sizeof (struct node));
         (*a)->root = x;
         (*a)->key = strdup(key);
         (*a)->type = strdup(type);
+        (*a)->size = size;
         (*a)->height = 1;
         (*a)->left = NULL;
         (*a)->right = NULL;
     }
-    else if (strcmp(key, (*a)->key) < 0) insertAVL (&((*a)->left), key, type, x);
-    else if (strcmp(key, (*a)->key) > 0) insertAVL (&((*a)->right), key, type, x);
+    else if (strcmp(key, (*a)->key) < 0) insertAVL (&((*a)->left), key, type, size, x);
+    else if (strcmp(key, (*a)->key) > 0) insertAVL (&((*a)->right), key, type, size, x);
 
     (*a)->height = 1 + max (height ((*a)->left), height ((*a)->right));
     int balance = get_balance (*a);
@@ -134,11 +135,20 @@ int isBSTree (AVLTree a) {
     return r;
 }
 
-int searchAVL (AVLTree a, char *key, int *x) {
+int searchAVLsp (AVLTree a, char *key, int *x) {
     int r = 1;
     if (a == NULL) r = 0;
-    else if (strcmp (key, a->key) < 0) r = searchAVL (a->left, key, x);
-    else if (strcmp (key, a->key) > 0) r = searchAVL (a->right, key, x);
+    else if (strcmp (key, a->key) < 0) r = searchAVLsp (a->left, key, x);
+    else if (strcmp (key, a->key) > 0) r = searchAVLsp (a->right, key, x);
     else *x = a->root;
+    return r;
+}
+
+int searchAVLsize (AVLTree a, char *key, int *x) {
+    int r = 1;
+    if (a == NULL) r = 0;
+    else if (strcmp (key, a->key) < 0) r = searchAVLsize (a->left, key, x);
+    else if (strcmp (key, a->key) > 0) r = searchAVLsize (a->right, key, x);
+    else *x = a->size;
     return r;
 }
