@@ -56,9 +56,9 @@ Instruction : Atribution    { asprintf (&$$, "%s", $1); }
             ;
 
 Conditional : T_IF Expression T_START Instructions T_END { 
-                asprintf (&$$, "%sjz else%d\n%selse%d:\n", $2, else_count, $4, else_count);
-                else_count++;
-                }
+    asprintf (&$$, "%sjz else%d\n%selse%d:\n", $2, else_count, $4, else_count);
+    else_count++;
+}
             ;
 
 Write : T_WRITE '(' '"' FString '"' ')' ';'   { asprintf (&$$, "%s", $4, "\n"); }
@@ -76,7 +76,7 @@ Atribution : T_ID '=' Expression ';'      {
     int index = array_size($1);
     if (!searchAVL(vars, varname, &sp)) {
         char *error_str;
-        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared\n", $1);
+        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", $1);
         yyerror(error_str);
         ERROR = 1;
     }
@@ -89,13 +89,13 @@ Atribution : T_ID '=' Expression ';'      {
     int size = array_size($1);
     if (!searchAVL (vars, varname, &sp)) { 
         char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared\n", $1);
+        asprintf (&error_str, "Variable \"%s\" has not yet been declared", $1);
         yyerror(error_str);
         ERROR = 1;
     }
     else if (size == -1) asprintf (&$$, "read\natoi\nstoreg %d\n", sp);
     else {
-        yyerror ("Can't assign integer to array\n");
+        yyerror ("Can't assign integer to array");
         ERROR = 1;
     }
 }
@@ -125,7 +125,7 @@ Declaration : T_INT T_ID ';'              {
         asprintf (&$$, "pushn 1\n%sstoreg %d\n", $4, var_count++);
     }
     else {
-        yyerror ("Can't declare and assign to array\n");
+        yyerror ("Can't declare and assign to array");
         ERROR = 1;
     }
 }
@@ -137,7 +137,7 @@ Declaration : T_INT T_ID ';'              {
         asprintf (&$$, "pushn 1\nread\natoi\nstoreg %d\n", var_count++);;
     }
     else {
-        yyerror ("Can't assign integer to array\n");
+        yyerror ("Can't assign integer to array");
         ERROR = 1;
     }
 }
@@ -157,7 +157,7 @@ Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, 
 Term : Term '*' Term  { asprintf (&$$, "%s%smul\n", $1, $3); }
      | Term '/' Term  { 
     if ($3 == 0) {
-      yyerror("Division by zero!\n");
+      yyerror("Division by zero!");
       ERROR = 1;
     }
     else asprintf (&$$, "%s%sdiv\n", $1, $3);
@@ -180,7 +180,7 @@ Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
     int index = array_size($1);
     if (!searchAVL (vars, varname, &sp)) { 
         char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared\n", $1);
+        asprintf (&error_str, "Variable \"%s\" has not yet been declared", $1);
         yyerror(error_str);
         ERROR = 1;
     } 

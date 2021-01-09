@@ -2,10 +2,10 @@ int a = 2 * (1 + 2);
 int b = 20 + a;
 int c = b % 10;
 int array[20];
-int bruh = read();
 
 %
-array[7] = a * (b - c / 3);
+bruh = read();
+array[21] = a * (b - c / 3);
 write("Cenas fixes {420 + (a - b) / 2}");
 a = 10+20 >= 15%2;
 if a == a :: a = 420; :;
