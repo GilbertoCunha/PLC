@@ -9,8 +9,9 @@ int else_count = 0;
 AVLTree vars = NULL;
 FILE *vm;
 
-int yylex();
-void yyerror(char *s);
+int yylex ();
+void myyyerror (char *l, char *s);
+void yyerror (char *s);
 %}
 %locations
 
@@ -81,34 +82,26 @@ Atribution : T_ID '=' Expression '\n'      {
     char *varname = get_varname($1);
     int index = array_size($1);
     searchAVLsize (vars, varname, &size);
-    if (!searchAVLsp (vars, varname, &sp)) {
+    if (searchAVLsp (vars, varname, &sp) == -1) {
         char *error_str;
         asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", $1);
-        yyerror(error_str);
-        ERROR = 1;
+        myyyerror(&$$, error_str);
     }
     else if (index == -1) asprintf (&$$, "%sstoreg %d\n", $3, sp);
     else if (index < size) asprintf (&$$, "pushgp\npushi %d\npadd\npushi %d\n%sstoren\n", sp, index, $3);
-    else {
-        yyerror ("Index out of range");
-        ERROR = 1;
-    }
+    else myyyerror (&$$, "Index out of range");
 }
             | T_ID '=' T_READ '(' ')' '\n'    {
     int sp;
     char *varname = get_varname($1);
     int index = array_size($1);
-    if (!searchAVLsp (vars, varname, &sp)) { 
+    if (searchAVLsp (vars, varname, &sp) == -1) { 
         char *error_str;
         asprintf (&error_str, "Variable \"%s\" has not yet been declared", $1);
-        yyerror(error_str);
-        ERROR = 1;
+        myyyerror(&$$, error_str);
     }
     else if (index == -1) asprintf (&$$, "read\natoi\nstoreg %d\n", sp);
-    else {
-        yyerror ("Can't assign integer to array");
-        ERROR = 1;
-    }
+    else myyyerror (&$$, "Can't assign integer to array");
 }
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
@@ -135,10 +128,7 @@ Declaration : T_INT T_ID '\n'              {
         insertAVL (&vars, varname, "int", size, var_count);
         asprintf (&$$, "pushn 1\n%sstoreg %d\n", $4, var_count++);
     }
-    else {
-        yyerror ("Can't declare and assign to array");
-        ERROR = 1;
-    }
+    else myyyerror (&$$, "Can't declare and assign to array");
 }
             | T_INT T_ID '=' T_READ '(' ')' '\n'        {
     int size = array_size($2);
@@ -147,10 +137,7 @@ Declaration : T_INT T_ID '\n'              {
         insertAVL (&vars, varname, "int", size, var_count);
         asprintf (&$$, "pushn 1\nread\natoi\nstoreg %d\n", var_count++);;
     }
-    else {
-        yyerror ("Can't assign integer to array");
-        ERROR = 1;
-    }
+    else myyyerror (&$$, "Can't assign integer to array");
 }
             | T_LCOM          { asprintf (&$$, "%s", ""); }
             | T_MCOM          { asprintf (&$$, "%s", ""); }
@@ -168,14 +155,11 @@ Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, 
            | Term                           { asprintf (&$$, "%s", $1); }
            ;
 
-Term : Term '*' Term  { asprintf (&$$, "%s%smul\n", $1, $3); }
-     | Term '/' Term  { 
-    if ($3 == 0) {
-      yyerror("Division by zero!");
-      ERROR = 1;
-    }
-    else asprintf (&$$, "%s%sdiv\n", $1, $3);
-}
+Term : Term '*' Term     { asprintf (&$$, "%s%smul\n", $1, $3); }
+     | Term '/' Term     { 
+                            if ($3 == 0) myyyerror (&$$, "Division by zero!");
+                            else asprintf (&$$, "%s%sdiv\n", $1, $3);
+                         }
      | Term '%' Term     { asprintf (&$$, "%s%smod\n", $1, $3); }
      | Term T_AND Term   { asprintf (&$$, "%snot\nnot\n%snot\nnot\nmul\n", $1, $3); }
      | Term T_OR Term    { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
@@ -193,23 +177,25 @@ Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
     char *varname = get_varname($1);
     int index = array_size($1);
     searchAVLsize(vars, varname, &size);
-    if (!searchAVLsp (vars, varname, &sp)) { 
+    if (searchAVLsp (vars, varname, &sp) == -1) {
         char *error_str;
         asprintf (&error_str, "Variable \"%s\" has not yet been declared", $1);
-        yyerror(error_str);
-        ERROR = 1;
+        myyyerror(&$$, error_str);
     } 
     else if (index == -1) asprintf(&$$, "pushg %d\n", sp);
     else if (index < size) asprintf(&$$, "pushgp\npushi %d\npadd\npushi %d\nload\n", sp, index);
-    else {
-        yyerror("Index out of range");
-        ERROR = 1;
-    }
+    else myyyerror(&$$, "Index out of range");
 }
        ;
 %%
 
 #include "lex.yy.c"
+
+void myyyerror (char *L, char *s) {
+    asprintf (L, "%s", "");
+    yyerror (s);
+    ERROR = 1;
+}
 
 void yyerror (char *s) {
     fprintf (stderr,"Line: %d | Error: %s\n", yylineno, s);
@@ -220,11 +206,13 @@ int main() {
 
     printf ("-> Started parsing\n");
     yyparse ();
-    
+
+    if (!ERROR) printf ("-> Parsing complete without errors.\n");
+
     GraphAVLTree (vars);
     fclose (vm);
 
-    if (!ERROR) printf ("-> Parsing complete without errors. Program file succesfully generated.\n");
+    if (!ERROR) printf ("-> Program file succesfully generated.\n");
     else {
         system ("make parser_error");
         printf ("-> Generated program file deleted. Errors found while parsing.\n");
