@@ -3,7 +3,7 @@
 #include "AVLTrees.h"
 #include "aux.h"
 
-int ERROR = 0;
+int DEBUG, ERROR = 0;
 int var_count = 0;
 int else_count = 0;
 AVLTree vars = NULL;
@@ -156,10 +156,7 @@ Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, 
            ;
 
 Term : Term '*' Term     { asprintf (&$$, "%s%smul\n", $1, $3); }
-     | Term '/' Term     { 
-                            if ($3 == 0) myyyerror (&$$, "Division by zero!");
-                            else asprintf (&$$, "%s%sdiv\n", $1, $3);
-                         }
+     | Term '/' Term     { asprintf (&$$, "%s%sdiv\n", $1, $3); }
      | Term '%' Term     { asprintf (&$$, "%s%smod\n", $1, $3); }
      | Term T_AND Term   { asprintf (&$$, "%snot\nnot\n%snot\nnot\nmul\n", $1, $3); }
      | Term T_OR Term    { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
@@ -192,6 +189,7 @@ Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
 #include "lex.yy.c"
 
 void myyyerror (char *L, char *s) {
+    if (!ERROR) printf ("%s\n", repeatChar ('-', 50));
     asprintf (L, "%s", "");
     yyerror (s);
     ERROR = 1;
@@ -201,23 +199,33 @@ void yyerror (char *s) {
     fprintf (stderr,"Line: %d | Error: %s\n", yylineno, s);
 }
 
-int main() {
+int main(int argc, int *argv) {
+    if (argc != 2) DEBUG = 0;
+    else DEBUG = argv[0];
+
     vm = fopen ("program.vm", "w");
 
     printf ("-> Started parsing\n");
     yyparse ();
-
-    if (!ERROR) printf ("-> Parsing complete without errors.\n");
-
-    GraphAVLTree (vars);
     fclose (vm);
 
-    if (!ERROR) printf ("-> Program file succesfully generated.\n");
-    else {
-        system ("make parser_error");
-        printf ("-> Generated program file deleted. Errors found while parsing.\n");
-        printf ("-> Correct them in order to be able to run the program.\n");
-
+    if (!ERROR) {
+        printf ("-> Parsing complete with no compile time errors.\n");
+        printf ("-> VM program generated\n");
     }
+    else {
+        printf ("%s\n", repeatChar ('-', 50));
+        system ("make error_clean");
+        printf ("-> VM program file deleted. Errors found while parsing.\n");
+        printf ("-> Correct them in order to be able to run the program.\n");
+    }
+
+    if (DEBUG && !ERROR) {
+            GraphAVLTree (vars);
+            system ("make debug_clean");
+            printf ("-> Debug mode detected. VM file kept and variables AVLTree image generated.\n");
+        }
+    else if (!DEBUG && !ERROR) system ("make no_debug_clean");
+
     return 0;
 }

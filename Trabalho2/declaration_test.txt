@@ -10,15 +10,14 @@ Tomás Carneiro - MIEFis
 int a = 2 * (1 + 2)
 int b = 20 + a
 int c = b % 10
-int array[20] = read()
+int array[20]
 int bruh
 
 %
 # As intruções devem começar com um % e terminar com outro
 bruh = read()
-cenas = johncena
 bruh = array[10]
-array[21] = a * (b - c / 3) / 0
+array[12] = a * (b - c / 3) / 0
 write("Cenas fixes {420 + (a - b) / 2}")
 a = 10+20 >= 15%2
 

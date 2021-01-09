@@ -3,7 +3,7 @@
 #include <string.h>
 #include "aux.h"
 
-int array_size(char *src) {
+int array_size (char *src) {
     int r;
     int size, end;
     char *aux = strdup(src);
@@ -19,10 +19,17 @@ int array_size(char *src) {
     return r;
 }
 
-char *get_varname(char *src) {
+char *get_varname (char *src) {
     char *dest = strdup(src);
     int i;
     for (i=0; src[i]!='\0' && src[i]!='['; ++i);
     dest[i] = '\0';
     return dest;
+}
+
+char *repeatChar (char c, int n) {
+    char *r = malloc ((n+1) * sizeof (char));
+    for (int i=0; i<n; ++i) r[i] = c;
+    r[n] = '\0';
+    return r;
 }
