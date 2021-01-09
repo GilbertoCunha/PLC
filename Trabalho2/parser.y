@@ -189,10 +189,11 @@ Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
 #include "lex.yy.c"
 
 void myyyerror (char *L, char *s) {
-    if (!ERROR) printf ("%s\n", repeatChar ('-', 50));
+    if (!ERROR) printf ("\n%s\n", repeatChar ('-', 90));
     asprintf (L, "%s", "");
     yyerror (s);
     ERROR = 1;
+    printf ("%s\n", repeatChar ('-', 90));
 }
 
 void yyerror (char *s) {
@@ -208,15 +209,14 @@ int main(int argc, int *argv) {
     printf ("-> Started parsing\n");
     yyparse ();
     fclose (vm);
-
     if (!ERROR) {
         printf ("-> Parsing complete with no compile time errors.\n");
         printf ("-> VM program generated\n");
     }
     else {
-        printf ("%s\n", repeatChar ('-', 50));
+        // printf ("%s\n", repeatChar ('-', 90));
         system ("make error_clean");
-        printf ("-> VM program file deleted. Errors found while parsing.\n");
+        printf ("\n-> VM program file deleted. Errors found while parsing.\n");
         printf ("-> Correct them in order to be able to run the program.\n");
     }
 
