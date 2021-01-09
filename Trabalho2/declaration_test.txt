@@ -10,7 +10,7 @@ Tomás Carneiro - MIEFis
 int a = 2 * (1 + 2)
 int b = 20 + a
 int c = b % 10
-int array[20] = read()
+int array[20]
 int bruh
 
 %

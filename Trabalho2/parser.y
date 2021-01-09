@@ -84,12 +84,16 @@ Atribution : T_ID '=' Expression '\n'      {
     searchAVLsize (vars, varname, &size);
     if (searchAVLsp (vars, varname, &sp) == -1) {
         char *error_str;
-        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", $1);
+        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", varname);
         myyyerror(&$$, error_str);
     }
     else if (index == -1) asprintf (&$$, "%sstoreg %d\n", $3, sp);
     else if (index < size) asprintf (&$$, "pushgp\npushi %d\npadd\npushi %d\n%sstoren\n", sp, index, $3);
-    else myyyerror (&$$, "Index out of range");
+    else {
+        char *error_str;
+        asprintf (&error_str, "Array \"%s\" of size %d has no index %d\n", varname, size, index);
+        myyyerror (&$$, error_str);
+    }
 }
             | T_ID '=' T_READ '(' ')' '\n'    {
     int sp;
@@ -97,11 +101,15 @@ Atribution : T_ID '=' Expression '\n'      {
     int index = array_size($1);
     if (searchAVLsp (vars, varname, &sp) == -1) { 
         char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared", $1);
+        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", varname);
         myyyerror(&$$, error_str);
     }
     else if (index == -1) asprintf (&$$, "read\natoi\nstoreg %d\n", sp);
-    else myyyerror (&$$, "Can't assign integer to array");
+    else {
+        char *error_str;
+        asprintf (&error_str, "Can't assign integer to array \"%s\"", varname);
+        myyyerror (&$$, error_str);
+    }
 }
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
@@ -137,7 +145,11 @@ Declaration : T_INT T_ID '\n'              {
         insertAVL (&vars, varname, "int", size, var_count);
         asprintf (&$$, "pushn 1\nread\natoi\nstoreg %d\n", var_count++);;
     }
-    else myyyerror (&$$, "Can't assign integer to array");
+    else {
+        char *error_str;
+        asprintf (&error_str, "Can't assign integer to array \"%s\"", varname);
+        myyyerror (&$$, error_str);
+    }
 }
             | T_LCOM          { asprintf (&$$, "%s", ""); }
             | T_MCOM          { asprintf (&$$, "%s", ""); }
@@ -176,12 +188,16 @@ Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
     searchAVLsize(vars, varname, &size);
     if (searchAVLsp (vars, varname, &sp) == -1) {
         char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared", $1);
+        asprintf (&error_str, "Variable \"%s\" has not yet been declared", varname);
         myyyerror(&$$, error_str);
     } 
     else if (index == -1) asprintf(&$$, "pushg %d\n", sp);
     else if (index < size) asprintf(&$$, "pushgp\npushi %d\npadd\npushi %d\nload\n", sp, index);
-    else myyyerror(&$$, "Index out of range");
+    else {
+        char *error_str;
+        asprintf (&error_str, "Array \"%s\" of size %d has no index %d\n", varname, size, index);
+        myyyerror (&$$, error_str);
+    }
 }
        ;
 %%
@@ -225,6 +241,10 @@ int main(int argc, int *argv) {
             system ("make debug_clean");
             printf ("-> Debug mode detected. VM file kept and variables AVLTree image generated.\n");
         }
+    else if (DEBUG && ERROR) {
+        GraphAVLTree (vars);
+        system ("rm *.dot");
+    }
     else if (!DEBUG && !ERROR) system ("make no_debug_clean");
 
     return 0;
