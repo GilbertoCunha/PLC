@@ -7,7 +7,7 @@ int array[10]
 %
 write(f"a: {a} | i: {i}\n")
 
-for (i, 0, 10, 2) ::
+for (i, 10, 0, -2) ::
     a = a + 2
 :;
 

@@ -199,9 +199,14 @@ void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *i
         myyyerror(r, error_str, error);
     }
     else if (index == -1) {
-        asprintf(r, "%s%sinf\njz cycle%d\n%sstoreg %d\ncycle%d:\n%spushg %d\n%sadd\nstoreg %d\npushg %d\n%ssupeq\njz cycle%d\ncycle%d:\n", 
-                expr1, expr2, *count + 1, expr1, sp, *count, instr, sp, expr3, sp, sp, expr2, *count, *count + 1);
-        *count = *count + 2;
+        char *aux, *aux1;
+        asprintf (&aux, "%s%s%spushi 0\ninf\njz cycle%d\ncycle%d:\ninfeq\njz cycle%d\njump cycle%d\ncycle%d:\nsupeq\njz cycle%d\njump cycle%d\n", 
+                  expr1, expr2, expr3, *count + 1, *count, *count + 2, *count + 4, *count + 1, *count + 2, *count + 4);
+        asprintf (&aux1, "%spushi 0\ninf\njz cycle%d\ncycle%d:\ninfeq\njz cycle%d\njump cycle%d\ncycle%d:\nsupeq\njz cycle%d\njump cycle%d\n", 
+                  expr3, *count + 6, *count + 5, *count + 3, *count + 7, *count + 6, *count + 3, *count + 7);
+        asprintf(r, "%scycle%d:\n%sstoreg %d\ncycle%d:\n%spushg %d\n%sadd\nstoreg %d\npushg %d\n%s%scycle%d:\n", 
+                 aux, *count + 2, expr1, sp, *count + 3, instr, sp, expr3, sp, sp, expr2, aux1, *count + 7);
+        *count = *count + 8;
     }
     else myyyerror (r, "Can't iterate variable of array, use integer instead.", error);
 }
