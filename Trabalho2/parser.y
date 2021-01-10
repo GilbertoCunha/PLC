@@ -1,7 +1,5 @@
 %{
-#include <stdio.h>
-#include "AVLTrees.h"
-#include "aux.h"
+#include "translator.h"
 
 int DEBUG, ERROR = 0;
 int var_count = 0;
@@ -10,7 +8,6 @@ AVLTree vars = NULL;
 FILE *vm;
 
 int yylex ();
-void myyyerror (char *l, char *s);
 void yyerror (char *s);
 %}
 %locations
@@ -34,7 +31,6 @@ void yyerror (char *s);
 
 %token T_READ T_WRITE
 %token T_LCOM T_MCOM
-%token T_ERROR
 
 %left '<' '>' '+' '-' '*' '/' '%' 
 %left T_AND T_OR T_NOT T_EQ T_NEQ T_GE T_LE
@@ -62,10 +58,9 @@ Instruction : Atribution     { asprintf (&$$, "%s", $1); }
             | '\n'           { asprintf (&$$, "%s", ""); }
             ;
 
-Conditional : T_IF Expression T_START '\n' Instructions T_END '\n' { 
-    asprintf (&$$, "%sjz else%d\n%selse%d:\n", $2, else_count, $5, else_count);
-    else_count++;
-}
+Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'                                     { ifInstr (&$$, $2, $5, &else_count); }
+            | T_IF Expression T_START '\n' Instructions T_START T_ELSE T_START '\n' Instructions T_END { ifElse (&$$, $2, $5, $10, &else_count); }
+            | T_IF Expression T_START '\n' Instructions T_START T_ELSE Conditional                     { ifElseif (&$$, $2, $5, $8, &else_count); }
             ;
 
 Write : T_WRITE '(' '"' FString '"' ')' '\n'   { asprintf (&$$, "%s", $4, "\n"); }
@@ -77,83 +72,19 @@ FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3
         | T_STR                          { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression '\n'      {
-    int sp, size;
-    char *varname = get_varname($1);
-    int index = array_size($1);
-    searchAVLsize (vars, varname, &size);
-    if (searchAVLsp (vars, varname, &sp) == -1) {
-        char *error_str;
-        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", varname);
-        myyyerror(&$$, error_str);
-    }
-    else if (index == -1) asprintf (&$$, "%sstoreg %d\n", $3, sp);
-    else if (index < size) asprintf (&$$, "pushgp\npushi %d\npadd\npushi %d\n%sstoren\n", sp, index, $3);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Array \"%s\" of size %d has no index %d\n", varname, size, index);
-        myyyerror (&$$, error_str);
-    }
-}
-            | T_ID '=' T_READ '(' ')' '\n'    {
-    int sp;
-    char *varname = get_varname($1);
-    int index = array_size($1);
-    if (searchAVLsp (vars, varname, &sp) == -1) { 
-        char *error_str;
-        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", varname);
-        myyyerror(&$$, error_str);
-    }
-    else if (index == -1) asprintf (&$$, "read\natoi\nstoreg %d\n", sp);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Can't assign integer to array \"%s\"", varname);
-        myyyerror (&$$, error_str);
-    }
-}
+Atribution : T_ID '=' Expression '\n'      { exprAtr (&$$, $1, $3, &vars, &ERROR); }
+           | T_ID '=' T_READ '(' ')' '\n'  { readAtr (&$$, $1, &vars, &ERROR); }
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
              |                            { asprintf (&$$, "%s", ""); }
              ;
 
-Declaration : T_INT T_ID '\n'              {
-    int size = array_size ($2);
-    char *varname = get_varname($2);
-    if (size == -1) {
-        insertAVL (&vars, varname, "int", size, var_count++);
-        asprintf (&$$, "pushn 1\n");
-    }
-    else {
-        insertAVL (&vars, varname, "array", size, var_count);
-        asprintf (&$$, "pushn %d\n", size);
-        var_count += size;
-    }
-}   
-            | T_INT T_ID '=' Expression '\n'            {
-    int size = array_size($2);
-    char *varname = get_varname($2);
-    if (size == -1) {
-        insertAVL (&vars, varname, "int", size, var_count);
-        asprintf (&$$, "pushn 1\n%sstoreg %d\n", $4, var_count++);
-    }
-    else myyyerror (&$$, "Can't declare and assign to array");
-}
-            | T_INT T_ID '=' T_READ '(' ')' '\n'        {
-    int size = array_size($2);
-    char *varname = get_varname($2);
-    if (size == -1) {
-        insertAVL (&vars, varname, "int", size, var_count);
-        asprintf (&$$, "pushn 1\nread\natoi\nstoreg %d\n", var_count++);;
-    }
-    else {
-        char *error_str;
-        asprintf (&error_str, "Can't assign integer to array \"%s\"", varname);
-        myyyerror (&$$, error_str);
-    }
-}
-            | T_LCOM          { asprintf (&$$, "%s", ""); }
-            | T_MCOM          { asprintf (&$$, "%s", ""); }
-            | '\n'            { asprintf (&$$, "%s", ""); }
+Declaration : T_INT T_ID '\n'                     { declaration (&$$, $2, &var_count, &vars); }   
+            | T_INT T_ID '=' Expression '\n'      { declrExpr (&$$, $2, $4, &vars, &var_count, &ERROR); }
+            | T_INT T_ID '=' T_READ '(' ')' '\n'  { declrRead (&$$, $2, &vars, &var_count, &ERROR); }
+            | T_LCOM                              { asprintf (&$$, "%s", ""); }
+            | T_MCOM                              { asprintf (&$$, "%s", ""); }
+            | '\n'                                { asprintf (&$$, "%s", ""); }
             ;
 
 Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, $3); }
@@ -181,36 +112,11 @@ Par : '(' Expression ')'    { asprintf (&$$, "%s", $2); }
     ;
 
 Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
-       | T_ID    {
-    int sp, size;
-    char *varname = get_varname($1);
-    int index = array_size($1);
-    searchAVLsize(vars, varname, &size);
-    if (searchAVLsp (vars, varname, &sp) == -1) {
-        char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared", varname);
-        myyyerror(&$$, error_str);
-    } 
-    else if (index == -1) asprintf(&$$, "pushg %d\n", sp);
-    else if (index < size) asprintf(&$$, "pushgp\npushi %d\npadd\npushi %d\nload\n", sp, index);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Array \"%s\" of size %d has no index %d\n", varname, size, index);
-        myyyerror (&$$, error_str);
-    }
-}
+       | T_ID    { factorId (&$$, $1, &vars, &ERROR); }
        ;
 %%
 
 #include "lex.yy.c"
-
-void myyyerror (char *L, char *s) {
-    if (!ERROR) printf ("\n%s\n", repeatChar ('-', 90));
-    asprintf (L, "%s", "");
-    yyerror (s);
-    ERROR = 1;
-    printf ("%s\n", repeatChar ('-', 90));
-}
 
 void yyerror (char *s) {
     fprintf (stderr,"Line: %d | Error: %s\n", yylineno, s);
@@ -230,22 +136,21 @@ int main(int argc, int *argv) {
         printf ("-> VM program generated\n");
     }
     else {
-        // printf ("%s\n", repeatChar ('-', 90));
-        system ("make error_clean");
+        system ("rm *.out lex.yy.c y.tab.h y.tab.c program.vm");
         printf ("\n-> VM program file deleted. Errors found while parsing.\n");
         printf ("-> Correct them in order to be able to run the program.\n");
     }
 
     if (DEBUG && !ERROR) {
             GraphAVLTree (vars);
-            system ("make debug_clean");
+            system ("rm *.out lex.yy.c y.tab.h y.tab.c *.dot");
             printf ("-> Debug mode detected. VM file kept and variables AVLTree image generated.\n");
         }
     else if (DEBUG && ERROR) {
         GraphAVLTree (vars);
         system ("rm *.dot");
     }
-    else if (!DEBUG && !ERROR) system ("make no_debug_clean");
+    else if (!DEBUG && !ERROR) system ("rm *.out lex.yy.c y.tab.c y.tab.h");
 
     return 0;
 }

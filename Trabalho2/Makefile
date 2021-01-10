@@ -1,7 +1,7 @@
 compile: lexer.l parser.y AVLTrees.h AVLTrees.c
 	@yacc -d parser.y
 	@flex lexer.l
-	@gcc AVLTrees.c aux.c y.tab.c `pkg-config --cflags --libs glib-2.0` -w 
+	@gcc AVLTrees.c translator.c aux.c y.tab.c `pkg-config --cflags --libs glib-2.0` -w 
 	@./a.out $(debug) < declaration_test.txt
 
 lexer: lexer.l
@@ -11,26 +11,6 @@ lexer: lexer.l
 graphAVL: GraphAVL.c AVLTrees.c AVLTrees.h
 	@gcc -w AVLTrees.c GraphAVL.c
 	@./a.out
-
-error_clean:
-	@rm *.out
-	@rm lex.yy.c
-	@rm y.tab.h
-	@rm y.tab.c
-	@rm program.vm
-
-debug_clean:
-	@rm *.out
-	@rm lex.yy.c
-	@rm y.tab.h
-	@rm y.tab.c
-	@rm *.dot
-
-no_debug_clean:
-	@rm *.out
-	@rm lex.yy.c
-	@rm y.tab.h
-	@rm y.tab.c
 
 clean:
 	@rm lex.yy.c
