@@ -19,8 +19,8 @@ void ifElse (char **r, char *expr, char *instr1, char *instr2, int *count) {
 }
 
 void ifElseif (char **r, char *expr, char *instr, char *cond, int *count) {
-    asprintf (r, "%sjz cond%d\n%sjump cond%d\ncond%d:\n%s", expr, *count, instr, *count + 1, *count, cond, *count + 1);
-    *count = *count + 2;
+    asprintf (r, "%sjz cond%d\n%sjump cond%d\ncond%d:\n%s", expr, *count, instr, *count - 1, *count, cond);
+    *count = *count + 1;
 }
 
 void exprAtr (char **r, char *id, char *expr, AVLTree *vars, int *error) {
