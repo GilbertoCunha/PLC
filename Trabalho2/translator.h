@@ -13,9 +13,11 @@ void ifElse (char **r, char *expr, char *instr1, char *instr2, int *count);
 void ifElseif (char **r, char *expr, char *instr, char *cond, int *count);
 void exprAtr (char **r, char *id, char *expr, AVLTree *vars, int *error);
 void readAtr (char **r, char *id, AVLTree *vars, int *error);
+void readAtrStr (char **r, char *id, char *s, AVLTree *vars, int *error);
 void declaration (char **r, char *id, int *count, AVLTree *vars);
 void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count, int *error);
 void declrRead (char **r, char *id, AVLTree *vars, int *count, int *error);
+void declrReadStr (char **r, char *id, char *s, AVLTree *vars, int *count, int *error);
 void factorId (char **r, char *id, AVLTree *vars, int *error);
 
 #endif

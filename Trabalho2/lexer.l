@@ -8,7 +8,7 @@ LETTER [a-zA-Z]
 OPERATION [\+\(\)\*\-\/\%]
 SYMBS [\+\-\*\/\{\}\[\]\(\)!<>\\\;]
 
-%x STRING FSTRING
+%x FSTRING CBRACES
 %option noyywrap
 %option yylineno
 
@@ -34,18 +34,19 @@ write                                       { return T_WRITE; }
 \!\=                                        { return T_NEQ; }
 \<\=                                        { return T_LE; }
 \>\=                                        { return T_GE; }
-\"                                          { BEGIN STRING; return yytext[0]; }
+\"[^\"]*\"                                  { yylval.id = strdup(yytext); return T_STR; }
+f\"                                         { BEGIN FSTRING; return T_FSS; }
 (.|\n)                                      { return yytext[0]; }                                          
 
-<STRING>\"                                          { BEGIN INITIAL; return yytext[0]; }
-<STRING>\{                                          { BEGIN FSTRING; return yytext[0]; }
-<STRING>[^\{\"]*                                    { yylval.id = strdup(yytext); return T_STR; }
+<FSTRING>\"                                         { BEGIN INITIAL; return yytext[0]; }
+<FSTRING>\{                                         { BEGIN CBRACES; return yytext[0]; }
+<FSTRING>[^\{\"]*                                   { yylval.id = strdup(yytext); return T_FSTR; }
 
-<FSTRING>\}                                         { BEGIN STRING; return yytext[0]; }
-<FSTRING>{OPERATION}                                { return yytext[0]; }
-<FSTRING>{DIGIT}+                                   { yylval.num = atoi(yytext); return T_NUM; }
-<FSTRING>{LETTER}+_*{LETTER}*{DIGIT}*\[{DIGIT}+\]   { yylval.id = strdup(yytext); return T_ID; } 
-<FSTRING>{LETTER}+_*{LETTER}*{DIGIT}*               { yylval.id = strdup(yytext); return T_ID; }
-<FSTRING>[ ]                                        { ; }
-<FSTRING>(.|\n)                                     { return yytext[0]; }
+<CBRACES>\}                                         { BEGIN FSTRING; return yytext[0]; }
+<CBRACES>{OPERATION}                                { return yytext[0]; }
+<CBRACES>{DIGIT}+                                   { yylval.num = atoi(yytext); return T_NUM; }
+<CBRACES>{LETTER}+_*{LETTER}*{DIGIT}*\[{DIGIT}+\]   { yylval.id = strdup(yytext); return T_ID; } 
+<CBRACES>{LETTER}+_*{LETTER}*{DIGIT}*               { yylval.id = strdup(yytext); return T_ID; }
+<CBRACES>[ ]                                        { ; }
+<CBRACES>(.|\n)                                     { return yytext[0]; }
 %%

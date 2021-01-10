@@ -2,7 +2,7 @@ compile: lexer.l parser.y AVLTrees.h AVLTrees.c
 	@yacc -d parser.y
 	@flex lexer.l
 	@gcc AVLTrees.c translator.c aux.c y.tab.c `pkg-config --cflags --libs glib-2.0` -w 
-	@./a.out $(debug) < declaration_test.txt
+	@./a.out $(debug) < $(file)
 
 lexer: lexer.l
 	@flex aux_lexer.l

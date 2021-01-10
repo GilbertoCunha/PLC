@@ -59,6 +59,23 @@ void readAtr (char **r, char *id, AVLTree *vars, int *error) {
     }
 }
 
+void readAtrStr (char **r, char *id, char *s, AVLTree *vars, int *error) {
+    int sp;
+    char *varname = get_varname(id);
+    int index = array_size(id);
+    if (searchAVLsp (*vars, varname, &sp) == -1) { 
+        char *error_str;
+        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared", varname);
+        myyyerror(r, error_str, error);
+    }
+    else if (index == -1) asprintf (r, "pushs %s\nwrites\nread\natoi\nstoreg %d\n", s, sp);
+    else {
+        char *error_str;
+        asprintf (&error_str, "Can't assign integer to array \"%s\"", varname);
+        myyyerror (r, error_str, error);
+    }
+}
+
 void declaration (char **r, char *id, int *count, AVLTree *vars) {
     int size = array_size (id);
     char *varname = get_varname(id);
@@ -91,6 +108,21 @@ void declrRead (char **r, char *id, AVLTree *vars, int *count, int *error) {
     if (size == -1) {
         insertAVL (vars, varname, "int", size, *count);
         asprintf (r, "pushn 1\nread\natoi\nstoreg %d\n", *count);
+        *count = *count + 1;
+    }
+    else {
+        char *error_str;
+        asprintf (&error_str, "Can't assign integer to array \"%s\"", varname);
+        myyyerror (r, error_str, error);
+    }
+}
+
+void declrReadStr (char **r, char *id, char *s, AVLTree *vars, int *count, int *error) {
+    int size = array_size(id);
+    char *varname = get_varname(id);
+    if (size == -1) {
+        insertAVL (vars, varname, "int", size, *count);
+        asprintf (r, "pushs %s\nwrites\npushn 1\nread\natoi\nstoreg %d\n", s, *count);
         *count = *count + 1;
     }
     else {

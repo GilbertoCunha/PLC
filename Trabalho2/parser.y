@@ -19,9 +19,8 @@ void yyerror (char *s);
 }
 
 %token T_INT
-%token <id> T_ID
+%token <id> T_ID T_STR T_FSTR
 %token <num> T_NUM
-%token <id> T_STR
 
 %token T_AND T_OR T_NOT
 %token T_EQ T_NEQ T_GE T_LE
@@ -30,7 +29,7 @@ void yyerror (char *s);
 %token T_START T_END
 
 %token T_READ T_WRITE
-%token T_LCOM T_MCOM
+%token T_LCOM T_MCOM T_FSS
 
 %left '<' '>' '+' '-' '*' '/' '%' 
 %left T_AND T_OR T_NOT T_EQ T_NEQ T_GE T_LE
@@ -63,28 +62,31 @@ Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'              
             | T_IF Expression T_START '\n' Instructions T_START T_ELSE Conditional                     { ifElseif (&$$, $2, $5, $8, &else_count); }
             ;
 
-Write : T_WRITE '(' '"' FString '"' ')' '\n'   { asprintf (&$$, "%s", $4, "\n"); }
+Write : T_WRITE '(' T_FSS FString '"' ')' '\n'   { asprintf (&$$, "%s", $4); }
+      | T_WRITE '(' T_STR ')' '\n'               { asprintf (&$$, "pushs %s\nwrites\n", $3); }
       ;
 
 FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3); }
-        | FString T_STR                  { asprintf (&$$, "%spushs \"%s\"\nwrites\n", $1, $2); }
+        | FString T_FSTR                 { asprintf (&$$, "%spushs \"%s\"\nwrites\n", $1, $2); }
         | '{' Expression '}'             { asprintf (&$$, "%swritei\n", $2); }
-        | T_STR                          { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
+        | T_FSTR                         { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression '\n'      { exprAtr (&$$, $1, $3, &vars, &ERROR); }
-           | T_ID '=' T_READ '(' ')' '\n'  { readAtr (&$$, $1, &vars, &ERROR); }
+Atribution : T_ID '=' Expression '\n'            { exprAtr (&$$, $1, $3, &vars, &ERROR); }
+           | T_ID '=' T_READ '(' ')' '\n'        { readAtr (&$$, $1, &vars, &ERROR); }
+           | T_ID '=' T_READ '(' T_STR ')' '\n'  { readAtrStr (&$$, $1, $5, &vars, &ERROR); }
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
              |                            { asprintf (&$$, "%s", ""); }
              ;
 
-Declaration : T_INT T_ID '\n'                     { declaration (&$$, $2, &var_count, &vars); }   
-            | T_INT T_ID '=' Expression '\n'      { declrExpr (&$$, $2, $4, &vars, &var_count, &ERROR); }
-            | T_INT T_ID '=' T_READ '(' ')' '\n'  { declrRead (&$$, $2, &vars, &var_count, &ERROR); }
-            | T_LCOM                              { asprintf (&$$, "%s", ""); }
-            | T_MCOM                              { asprintf (&$$, "%s", ""); }
-            | '\n'                                { asprintf (&$$, "%s", ""); }
+Declaration : T_INT T_ID '\n'                           { declaration (&$$, $2, &var_count, &vars); }   
+            | T_INT T_ID '=' Expression '\n'            { declrExpr (&$$, $2, $4, &vars, &var_count, &ERROR); }
+            | T_INT T_ID '=' T_READ '(' ')' '\n'        { declrRead (&$$, $2, &vars, &var_count, &ERROR); }
+            | T_INT T_ID '=' T_READ '(' T_STR ')' '\n'  { declrReadStr (&$$, $2, $6, &vars, &var_count, &ERROR); }
+            | T_LCOM                                    { asprintf (&$$, "%s", ""); }
+            | T_MCOM                                    { asprintf (&$$, "%s", ""); }
+            | '\n'                                      { asprintf (&$$, "%s", ""); }
             ;
 
 Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, $3); }
