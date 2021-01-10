@@ -1,0 +1,59 @@
+pushn 1
+pushn 1
+pushn 1
+pushi 0
+storeg 2
+pushn 1
+pushi 10
+storeg 3
+pushn 10
+start
+pushs "a: "
+writes
+pushg 0
+writei
+pushs " | i: "
+writes
+pushg 1
+writei
+pushs "\n"
+writes
+pushi 0
+pushi 10
+inf
+jz cycle1
+pushi 0
+storeg 1
+cycle0:
+pushg 0
+pushi 2
+add
+storeg 0
+pushg 1
+pushi 2
+add
+storeg 1
+pushg 1
+pushi 10
+supeq
+jz cycle0
+cycle1:
+pushi -1
+pushi 2
+pushi -4
+mul
+add
+pushi 2
+sub
+storeg 0
+pushs "a: "
+writes
+pushg 0
+writei
+pushs " | i: "
+writes
+pushg 1
+writei
+pushs "\n"
+writes
+stop

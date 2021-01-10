@@ -3,7 +3,7 @@
 
 int DEBUG, ERROR = 0;
 int var_count = 0;
-int else_count = 0;
+int func_count = 0;
 AVLTree vars = NULL;
 FILE *vm;
 
@@ -35,7 +35,7 @@ void yyerror (char *s);
 %left T_AND T_OR T_NOT T_EQ T_NEQ T_GE T_LE
 
 %type <inst> Declarations Declaration
-%type <inst> Instructions Instruction Atribution Write Conditional
+%type <inst> Instructions Instruction Atribution Write Conditional Cycle
 %type <inst> Par Factor Term Expression FString
 
 %start L
@@ -52,14 +52,19 @@ Instructions : Instructions Instruction { asprintf (&$$, "%s%s", $1, $2); }
 Instruction : Atribution     { asprintf (&$$, "%s", $1); }
             | Write          { asprintf (&$$, "%s", $1); }
             | Conditional    { asprintf (&$$, "%s", $1); }
+            | Cycle          { asprintf (&$$, "%s", $1); }
             | T_LCOM         { asprintf (&$$, "%s", ""); }
             | T_MCOM         { asprintf (&$$, "%s", ""); }
             | '\n'           { asprintf (&$$, "%s", ""); }
             ;
 
-Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'                                     { ifInstr (&$$, $2, $5, &else_count); }
-            | T_IF Expression T_START '\n' Instructions T_START T_ELSE T_START '\n' Instructions T_END { ifElse (&$$, $2, $5, $10, &else_count); }
-            | T_IF Expression T_START '\n' Instructions T_START T_ELSE Conditional                     { ifElseif (&$$, $2, $5, $8, &else_count); }
+Cycle : T_FOR '(' T_ID ',' Expression ',' Expression ')' T_START Instructions T_END { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count, &ERROR); }
+      | T_FOR '(' T_ID ',' Expression ',' Expression ',' Expression ')' T_START Instructions T_END { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count, &ERROR); }
+      ;
+
+Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'                                     { ifInstr (&$$, $2, $5, &func_count); }
+            | T_IF Expression T_START '\n' Instructions T_START T_ELSE T_START '\n' Instructions T_END { ifElse (&$$, $2, $5, $10, &func_count); }
+            | T_IF Expression T_START '\n' Instructions T_START T_ELSE Conditional                     { ifElseif (&$$, $2, $5, $8, &func_count); }
             ;
 
 Write : T_WRITE '(' T_FSS FString '"' ')' '\n'   { asprintf (&$$, "%s", $4); }
@@ -113,8 +118,10 @@ Par : '(' Expression ')'    { asprintf (&$$, "%s", $2); }
     | Factor                { asprintf (&$$, "%s", $1); }
     ;
 
-Factor : T_NUM   { asprintf (&$$, "pushi %d\n", $1); }
-       | T_ID    { factorId (&$$, $1, &vars, &ERROR); }
+Factor : T_NUM      { asprintf (&$$, "pushi %d\n", $1); }
+       | T_ID       { factorId (&$$, $1, &vars, &ERROR); }
+       | '-' T_NUM  { asprintf (&$$, "pushi %d\n", -$2); }
+       | '-' T_ID   { negfactorId (&$$, $2, &vars, &ERROR); }
        ;
 %%
 

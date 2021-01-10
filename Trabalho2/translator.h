@@ -19,5 +19,8 @@ void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count, int *
 void declrRead (char **r, char *id, AVLTree *vars, int *count, int *error);
 void declrReadStr (char **r, char *id, char *s, AVLTree *vars, int *count, int *error);
 void factorId (char **r, char *id, AVLTree *vars, int *error);
+void negfactorId (char **r, char *id, AVLTree *vars, int *error);
+void forStartEnd (char **r, char *id, char *expr1, char *expr2, char *instr, AVLTree *vars, int *count, int *error);
+void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *instr, AVLTree *vars, int *count, int *error);
 
 #endif
