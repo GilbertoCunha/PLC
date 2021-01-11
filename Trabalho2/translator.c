@@ -1,13 +1,5 @@
 #include "translator.h"
 
-void myyyerror (char **r, char *s, int *error) {
-    if (!(*error)) printf ("\n%s\n", repeatChar ('-', 90));
-    asprintf (r, "%s", "");
-    yyerror (s);
-    *error = 1;
-    printf ("%s\n", repeatChar ('-', 90));
-}
-
 void ifInstr (char **r, char *expr, char *instr, int *count) {
     asprintf (r, "%sjz cond%d\n%scond%d:\n", expr, *count, instr, *count);
     *count = *count + 1;
@@ -25,77 +17,55 @@ void ifElseif (char **r, char *expr, char *instr, char *cond, int *count) {
 
 void exprAtr (char **r, char *id, char *expr, AVLTree *vars, int *error) {
     int sp, size;
+    char *class, *type;
     char *varname = get_varname(id);
     int index = array_size(id);
-    searchAVLsize (*vars, varname, &size);
-    if (searchAVLsp (*vars, varname, &sp) == -1) {
-        char *error_str;
-        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared.", varname);
-        myyyerror(r, error_str, error);
-    }
-    else if (index == -1) asprintf (r, "%sstoreg %d\n", expr, sp);
-    else if (index < size) asprintf (r, "pushgp\npushi %d\npadd\npushi %d\n%sstoren\n", sp, index, expr);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Array \"%s\" of size %d has no index %d.", varname, size, index);
-        myyyerror (r, error_str, error);
-    }
+    if (!searchAVL (*vars, varname, &class, &type, &size, &sp)) notDeclared (r, varname, error);
+    else if (!strcmp (class, "var")) asprintf (r, "%sstoreg %d\n", expr, sp);
+    else if (!strcmp (class, "array") && index < size) asprintf (r, "pushgp\npushi %d\npadd\npushi %d\n%sstoren\n", sp, index, expr);
+    else if (!strcmp (class, "array")) outOfRange (r, varname, size, index, error);
 }
 
 void readAtr (char **r, char *id, AVLTree *vars, int *error) {
-    int sp;
+    int sp, size;
+    char *class, *type;
     char *varname = get_varname(id);
     int index = array_size(id);
-    if (searchAVLsp (*vars, varname, &sp) == -1) { 
-        char *error_str;
-        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared.", varname);
-        myyyerror(r, error_str, error);
-    }
-    else if (index == -1) asprintf (r, "read\natoi\nstoreg %d\n", sp);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Can't assign integer to array \"%s\".", varname);
-        myyyerror (r, error_str, error);
-    }
+    if (!searchAVL (*vars, varname, &class, &type, &size, &sp)) notDeclared (r, varname, error);
+    else if (!strcmp (class, "type")) asprintf (r, "read\natoi\nstoreg %d\n", sp);
+    else if (!strcmp (class, "array")) assignIntArray (r, varname, error);
 }
 
 void readAtrStr (char **r, char *id, char *s, AVLTree *vars, int *error) {
-    int sp;
+    int sp, size;
+    char *type, *class;
     char *varname = get_varname(id);
     int index = array_size(id);
-    if (searchAVLsp (*vars, varname, &sp) == -1) { 
-        char *error_str;
-        asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared.", varname);
-        myyyerror(r, error_str, error);
-    }
-    else if (index == -1) asprintf (r, "pushs %s\nwrites\nread\natoi\nstoreg %d\n", s, sp);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Can't assign integer to array \"%s\".", varname);
-        myyyerror (r, error_str, error);
-    }
+    if (!searchAVL (*vars, varname, &class, &type, &size, &sp)) notDeclared (r, varname, error);
+    else if (!strcmp (class, "var")) asprintf (r, "pushs %s\nwrites\nread\natoi\nstoreg %d\n", s, sp);
+    else if (!strcmp (class, "array")) assignIntArray (r, varname, error);
 }
 
 void declaration (char **r, char *id, int *count, AVLTree *vars) {
-    int size = array_size (id);
+    int index = array_size (id);
     char *varname = get_varname(id);
-    if (size == -1) {
-        insertAVL (vars, varname, "int", size, *count);
+    if (index == -1) {
+        insertAVL (vars, varname, "var", "int", 1, *count);
         asprintf (r, "pushn 1\n");
         *count = *count + 1;
     }
     else {
-        insertAVL (vars, varname, "array", size, *count);
-        asprintf (r, "pushn %d\n", size);
-        *count = *count + size;
+        insertAVL (vars, varname, "array", "int", index, *count);
+        asprintf (r, "pushn %d\n", index);
+        *count = *count + index;
     }
 }
 
 void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count, int *error) {
-    int size = array_size(id);
+    int index = array_size(id);
     char *varname = get_varname(id);
-    if (size == -1) {
-        insertAVL (vars, varname, "int", size, *count);
+    if (index == -1) {
+        insertAVL (vars, varname, "var", "int", 1, *count);
         asprintf (r, "pushn 1\n%sstoreg %d\n", expr, *count);
         *count = *count +1;
     }
@@ -103,102 +73,70 @@ void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count, int *
 }
 
 void declrRead (char **r, char *id, AVLTree *vars, int *count, int *error) {
-    int size = array_size(id);
+    int index = array_size(id);
     char *varname = get_varname(id);
-    if (size == -1) {
-        insertAVL (vars, varname, "int", size, *count);
+    if (index == -1) {
+        insertAVL (vars, varname, "var", "int", 1, *count);
         asprintf (r, "pushn 1\nread\natoi\nstoreg %d\n", *count);
         *count = *count + 1;
     }
-    else {
-        char *error_str;
-        asprintf (&error_str, "Can't assign integer to array \"%s\".", varname);
-        myyyerror (r, error_str, error);
-    }
+    else assignIntArray (r, varname, error);
 }
 
 void declrReadStr (char **r, char *id, char *s, AVLTree *vars, int *count, int *error) {
-    int size = array_size(id);
+    int index = array_size(id);
     char *varname = get_varname(id);
-    if (size == -1) {
-        insertAVL (vars, varname, "int", size, *count);
+    if (index == -1) {
+        insertAVL (vars, varname, "var", "int", 1, *count);
         asprintf (r, "pushs %s\nwrites\npushn 1\nread\natoi\nstoreg %d\n", s, *count);
         *count = *count + 1;
     }
-    else {
-        char *error_str;
-        asprintf (&error_str, "Can't assign integer to array \"%s\".", varname);
-        myyyerror (r, error_str, error);
-    }
+    else assignIntArray (r, varname, error);
 }
 
 void factorId (char **r, char *id, AVLTree *vars, int *error) {
     int sp, size;
+    char *class, *type;
     char *varname = get_varname(id);
     int index = array_size(id);
-    searchAVLsize(*vars, varname, &size);
-    if (searchAVLsp (*vars, varname, &sp) == -1) {
-        char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared.", varname);
-        myyyerror(r, error_str, error);
-    } 
-    else if (index == -1) asprintf(r, "pushg %d\n", sp);
-    else if (index < size) asprintf(r, "pushgp\npushi %d\npadd\npushi %d\nloadn\n", sp, index);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Array \"%s\" of size %d has no index %d.", varname, size, index);
-        myyyerror (r, error_str, error);
-    }
+    if (!searchAVL (*vars, varname, &class, &type, &size, &sp)) notDeclared (r, varname, error);
+    else if (!strcmp (class, "var")) asprintf(r, "pushg %d\n", sp);
+    else if (!strcmp (class, "array") && index < size) asprintf(r, "pushgp\npushi %d\npadd\npushi %d\nloadn\n", sp, index);
+    else if (!strcmp (class, "array")) outOfRange (r, varname, size, index, error);
 }
 
 void negfactorId (char **r, char *id, AVLTree *vars, int *error) {
     int sp, size;
+    char *class, *type;
     char *varname = get_varname(id);
     int index = array_size(id);
-    searchAVLsize(*vars, varname, &size);
-    if (searchAVLsp (*vars, varname, &sp) == -1) {
-        char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared.", varname);
-        myyyerror(r, error_str, error);
-    } 
-    else if (index == -1) asprintf(r, "pushg %d\npushi -1\nmul\n", sp);
-    else if (index < size) asprintf(r, "pushgp\npushi %d\npadd\npushi %d\nloadn\npushi -1\nmul\n", sp, index);
-    else {
-        char *error_str;
-        asprintf (&error_str, "Array \"%s\" of size %d has no index %d.", varname, size, index);
-        myyyerror (r, error_str, error);
-    }
+    if (!searchAVL (*vars, varname, &class, &type, &size, &sp)) notDeclared (r, varname, error);
+    else if (!strcmp (class, "var")) asprintf(r, "pushg %d\npushi -1\nmul\n", sp);
+    else if (!strcmp (class, "array") && index < size) asprintf(r, "pushgp\npushi %d\npadd\npushi %d\nloadn\npushi -1\nmul\n", sp, index);
+    else if (!strcmp (class, "array")) outOfRange (r, varname, size, index, error);
 }
 
 void forStartEnd (char **r, char *id, char *expr1, char *expr2, char *instr, AVLTree *vars, int *count, int *error) {
     int sp, size;
+    char *class, *type;
     char *varname = get_varname(id);
     int index = array_size(id);
-    searchAVLsize(*vars, varname, &size);
-    if (searchAVLsp (*vars, varname, &sp) == -1) {
-        char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared.", varname);
-        myyyerror(r, error_str, error);
-    }
-    else if (index == -1) {
+    if (!searchAVL (*vars, varname, &class, &type, &size, &sp)) notDeclared (r, varname, error);
+    else if (!strcmp (class, "var")) {
         asprintf(r, "%s%sinf\njz cycle%d\n%sstoreg %d\ncycle%d:\n%spushg %d\npushi 1\nadd\nstoreg %d\npushg %d\n%ssupeq\njz cycle%d\ncycle%d:\n", 
                 expr1, expr2, *count + 1, expr1, sp, *count, instr, sp, sp, sp, expr2, *count, *count + 1);
         *count = *count + 2;
     }
-    else myyyerror (r, "Can't iterate variable of array, use integer instead.", error);
+    else if (!strcmp (class, "array")) myyyerror (r, "Can't iterate variable of array, use integer instead.", error);
 }
 
 void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *instr, AVLTree *vars, int *count, int *error) {
     int sp, size;
+    char *class, *type;
     char *varname = get_varname(id);
     int index = array_size(id);
-    searchAVLsize(*vars, varname, &size);
-    if (searchAVLsp (*vars, varname, &sp) == -1) {
-        char *error_str;
-        asprintf (&error_str, "Variable \"%s\" has not yet been declared.", varname);
-        myyyerror(r, error_str, error);
-    }
-    else if (index == -1) {
+    if (!searchAVL (*vars, varname, &class, &type, &size, &sp)) notDeclared (r, varname, error);
+    else if (!strcmp (class, "var")) {
         char *aux, *aux1;
         asprintf (&aux, "%s%s%spushi 0\ninf\njz cycle%d\ncycle%d:\ninfeq\njz cycle%d\njump cycle%d\ncycle%d:\nsupeq\njz cycle%d\njump cycle%d\n", 
                   expr1, expr2, expr3, *count + 1, *count, *count + 2, *count + 4, *count + 1, *count + 2, *count + 4);
@@ -208,5 +146,5 @@ void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *i
                  aux, *count + 2, expr1, sp, *count + 3, instr, sp, expr3, sp, sp, expr2, aux1, *count + 7);
         *count = *count + 8;
     }
-    else myyyerror (r, "Can't iterate variable of array, use integer instead.", error);
+    else if (!strcmp (class, "array")) myyyerror (r, "Can't iterate variable of array, use integer instead.", error);
 }

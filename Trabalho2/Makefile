@@ -1,7 +1,7 @@
 compile: lexer.l parser.y AVLTrees.h AVLTrees.c
 	@yacc -d parser.y
 	@flex lexer.l
-	@gcc AVLTrees.c translator.c aux.c y.tab.c `pkg-config --cflags --libs glib-2.0` -w 
+	@gcc AVLTrees.c errors.c translator.c aux.c y.tab.c -w
 	@./a.out $(debug) < $(file)
 
 lexer: lexer.l

@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "errors.h"
 #include "AVLTrees.h"
 #include "aux.h"
 
-void myyyerror (char **r, char *s, int *error);
 void ifInstr (char **r, char *expr, char *instr, int *count);
 void ifElse (char **r, char *expr, char *instr1, char *instr2, int *count);
 void ifElseif (char **r, char *expr, char *instr, char *cond, int *count);

@@ -158,6 +158,7 @@ int main(int argc, int *argv) {
     else if (DEBUG && ERROR) {
         GraphAVLTree (vars);
         system ("rm *.dot");
+        printf ("-> Debug mode detected. Variables AVLTree image generated.\n");
     }
     else if (!DEBUG && !ERROR) system ("rm *.out lex.yy.c y.tab.c y.tab.h");
 

@@ -1,20 +1,22 @@
-int N[4];
-int i, r;
+int N[4]
+int i
+int r
 
-for (i , 0, 4) ::
-    N[i] = read();
+%
+for (i, 0, 4) ::
+    # Adicionar uso de variáveis como índices de arrays
+    N[i] = read("Introduza o lado do quadrado: ")
 
     if i>0 ::
         if N[i] != N[i-1] ::
-            r = 1;
+            r = 1
         :;
     :;
 :;
 
 if r != 1 ::
-    write("Podem ser os lados de um quadrado\n");
+    write("Podem ser os lados de um quadrado\n")
+:: else ::
+    write("Não podem ser os lados de um quadrado\n")
 :;
-else ::
-    write("Não podem ser os lados de um quadrado\n");
-:;
-
+%
