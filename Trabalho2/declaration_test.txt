@@ -19,7 +19,7 @@ write("Debug write\n")
 # As intruções devem começar com um % e terminar com outro
 bruh = read("New value for bruh: ")
 bruh = array[21]
-array[12] = a * (b - c / 3) / 2
+array[12] a * (b - c / 3) / 2
 write(f"Cenas fixes {420 + (a - b) / 2}\n")
 a = 10+20 >= 15%2
 

@@ -8,9 +8,9 @@
 #include "translator.h"
 #include "aux.h"
 
-void myyyerror (char **r, char *s, int *error);
-void notDeclared (char **r, char *id, int *error);
-void outOfRange (char **r, char *id, char size, char index, int *error);
-void assignIntArray (char **r, char *id, int *error);
+void myyyerror (char **r, char *s);
+void notDeclared (char **r, char *id);
+void outOfRange (char **r, char *id, char size, char index);
+void assignIntArray (char **r, char *id);
 
 #endif

@@ -1,7 +1,7 @@
 %{
 #include "translator.h"
 
-int DEBUG, ERROR = 0;
+int DEBUG, ERROR = 0, SYNT_ERROR = 0;
 int var_count = 0;
 int func_count = 0;
 AVLTree vars = NULL;
@@ -10,6 +10,7 @@ FILE *vm;
 int yylex ();
 void yyerror (char *s);
 %}
+%error-verbose
 %locations
 
 %union {
@@ -42,10 +43,12 @@ void yyerror (char *s);
 
 %%
 L : Declarations '%' Instructions '%' { fprintf (vm, "%sstart\n%sstop", $1, $3); }
+  | error '\n'                  
   |
   ;
 
 Instructions : Instructions Instruction { asprintf (&$$, "%s%s", $1, $2); }
+             | error '\n'               { asprintf (&$$, "%s",""); }
              |                          { asprintf (&$$, "%s", ""); }
              ;
 
@@ -58,8 +61,8 @@ Instruction : Atribution     { asprintf (&$$, "%s", $1); }
             | '\n'           { asprintf (&$$, "%s", ""); }
             ;
 
-Cycle : T_FOR '(' T_ID ',' Expression ',' Expression ')' T_START Instructions T_END { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count, &ERROR); }
-      | T_FOR '(' T_ID ',' Expression ',' Expression ',' Expression ')' T_START Instructions T_END { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count, &ERROR); }
+Cycle : T_FOR '(' T_ID ',' Expression ',' Expression ')' T_START Instructions T_END { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
+      | T_FOR '(' T_ID ',' Expression ',' Expression ',' Expression ')' T_START Instructions T_END { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
       ;
 
 Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'                                     { ifInstr (&$$, $2, $5, &func_count); }
@@ -77,18 +80,19 @@ FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3
         | T_FSTR                         { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression '\n'            { exprAtr (&$$, $1, $3, &vars, &ERROR); }
-           | T_ID '=' T_READ '(' ')' '\n'        { readAtr (&$$, $1, &vars, &ERROR); }
-           | T_ID '=' T_READ '(' T_STR ')' '\n'  { readAtrStr (&$$, $1, $5, &vars, &ERROR); }
+Atribution : T_ID '=' Expression '\n'            { exprAtr (&$$, $1, $3, &vars); }
+           | T_ID '=' T_READ '(' ')' '\n'        { readAtr (&$$, $1, &vars); }
+           | T_ID '=' T_READ '(' T_STR ')' '\n'  { readAtrStr (&$$, $1, $5, &vars); }
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
+             | error '\n'                 { asprintf (&$$, "%s",""); }
              |                            { asprintf (&$$, "%s", ""); }
              ;
 
 Declaration : T_INT T_ID '\n'                           { declaration (&$$, $2, &var_count, &vars); }   
-            | T_INT T_ID '=' Expression '\n'            { declrExpr (&$$, $2, $4, &vars, &var_count, &ERROR); }
-            | T_INT T_ID '=' T_READ '(' ')' '\n'        { declrRead (&$$, $2, &vars, &var_count, &ERROR); }
-            | T_INT T_ID '=' T_READ '(' T_STR ')' '\n'  { declrReadStr (&$$, $2, $6, &vars, &var_count, &ERROR); }
+            | T_INT T_ID '=' Expression '\n'            { declrExpr (&$$, $2, $4, &vars, &var_count); }
+            | T_INT T_ID '=' T_READ '(' ')' '\n'        { declrRead (&$$, $2, &vars, &var_count); }
+            | T_INT T_ID '=' T_READ '(' T_STR ')' '\n'  { declrReadStr (&$$, $2, $6, &vars, &var_count); }
             | T_LCOM                                    { asprintf (&$$, "%s", ""); }
             | T_MCOM                                    { asprintf (&$$, "%s", ""); }
             | '\n'                                      { asprintf (&$$, "%s", ""); }
@@ -119,16 +123,19 @@ Par : '(' Expression ')'    { asprintf (&$$, "%s", $2); }
     ;
 
 Factor : T_NUM      { asprintf (&$$, "pushi %d\n", $1); }
-       | T_ID       { factorId (&$$, $1, &vars, &ERROR); }
+       | T_ID       { factorId (&$$, $1, &vars); }
        | '-' T_NUM  { asprintf (&$$, "pushi %d\n", -$2); }
-       | '-' T_ID   { negfactorId (&$$, $2, &vars, &ERROR); }
+       | '-' T_ID   { negfactorId (&$$, $2, &vars); }
        ;
 %%
 
 #include "lex.yy.c"
 
 void yyerror (char *s) {
+    if (!ERROR) printf ("\n%s\n", repeatChar ('-', 90));
     fprintf (stderr,"Line: %d | Error: %s\n", yylineno, s);
+    printf ("%s\n", repeatChar ('-', 90));
+    ERROR = 1;
 }
 
 int main(int argc, int *argv) {
