@@ -6,7 +6,6 @@
 DIGIT [0-9]
 LETTER [a-zA-Z]
 OPERATION [\+\(\)\*\-\/\%]
-SYMBS [\+\-\*\/\{\}\[\]\(\)!<>\\\;]
 
 %x FSTRING CBRACES
 %option noyywrap

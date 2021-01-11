@@ -22,3 +22,9 @@ void assignIntArray (char **r, char *id) {
     asprintf (&error_str, "Can't assign integer to array \"%s\".", id);
     myyyerror (r, error_str);
 }
+
+void intIndex (char **r, char *id) {
+    char *error_str;
+    asprintf (&error_str, "Integer \"%s\" can't be indexed.", id);
+    myyyerror (r, error_str);
+}
