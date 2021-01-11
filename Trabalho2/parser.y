@@ -1,7 +1,8 @@
 %{
 #include "translator.h"
 
-int DEBUG, ERROR = 0, SYNT_ERROR = 0;
+int DEBUG, VERBOSE;
+int ERROR = 0, SYNT_ERROR = 0;
 int var_count = 0;
 int func_count = 0;
 AVLTree vars = NULL;
@@ -138,36 +139,40 @@ void yyerror (char *s) {
     ERROR = 1;
 }
 
-int main(int argc, int *argv) {
-    if (argc != 2) DEBUG = 0;
-    else DEBUG = argv[0];
-
+int main(int argc, char **argv) {
+    if (!strcmp (argv[1], "yes")) DEBUG = 1;
+    else DEBUG = 0;
+    if (!strcmp (argv[2], "yes")) VERBOSE = 1;
+    else VERBOSE = 0;
     vm = fopen ("program.vm", "w");
 
-    printf ("-> Started parsing\n");
+    if (VERBOSE) printf ("-> Started parsing\n");
     yyparse ();
     fclose (vm);
-    if (!ERROR) {
+
+    if (!ERROR && VERBOSE) {
         printf ("-> Parsing complete with no compile time errors.\n");
         printf ("-> VM program generated\n");
     }
-    else {
-        system ("rm *.out lex.yy.c y.tab.h y.tab.c program.vm");
+    else if (ERROR && VERBOSE) {
+        system ("rm program.vm");
         printf ("\n-> VM program file deleted. Errors found while parsing.\n");
         printf ("-> Correct them in order to be able to run the program.\n");
     }
+    else if (ERROR) system ("rm program.vm");
+
+    system ("rm a.out lex.yy.c y.tab.h y.tab.c");
 
     if (DEBUG && !ERROR) {
             GraphAVLTree (vars);
-            system ("rm *.out lex.yy.c y.tab.h y.tab.c *.dot");
-            printf ("-> Debug mode detected. VM file kept and variables AVLTree image generated.\n");
-        }
-    else if (DEBUG && ERROR) {
-        GraphAVLTree (vars);
-        system ("rm *.dot");
-        printf ("-> Debug mode detected. Variables AVLTree image generated.\n");
+            system ("rm avl.dot");
+            if (VERBOSE) printf ("-> Debug mode detected. VM file kept and variables AVLTree image generated.\n");
     }
-    else if (!DEBUG && !ERROR) system ("rm *.out lex.yy.c y.tab.c y.tab.h");
+    else if (DEBUG) {
+        GraphAVLTree (vars);
+        system ("rm avl.dot");
+        if (VERBOSE) printf ("-> Debug mode detected. Variables AVLTree image generated.\n");
+    }
 
     return 0;
 }
