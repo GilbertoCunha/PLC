@@ -81,16 +81,21 @@ FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3
         | T_FSTR                         { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression '\n'            { exprAtr (&$$, $1, $3, &vars); }
-           | T_ID '=' T_READ '(' ')' '\n'        { readAtr (&$$, $1, &vars); }
-           | T_ID '=' T_READ '(' T_STR ')' '\n'  { readAtrStr (&$$, $1, $5, &vars); }
+Atribution : T_ID '=' Expression '\n'                               { exprAtr (&$$, $1, $3, &vars); }
+           | T_ID '=' T_READ '(' ')' '\n'                           { readAtr (&$$, $1, &vars); }
+           | T_ID '=' T_READ '(' T_STR ')' '\n'                     { readAtrStr (&$$, $1, $5, &vars); }
+           | T_ID '[' Expression ']' '=' Expression '\n'            { arrayAtr (&$$, $1, $3, $6, &vars); }
+           | T_ID '[' Expression ']' '=' T_READ '(' ')' '\n'        { readArrayAtr (&$$, $1, $3, &vars); }
+           | T_ID '[' Expression ']' '=' T_READ '(' T_STR ')' '\n'  { readArrayAtrStr (&$$, $1, $3, $8, &vars); }
+           ;
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
              | error '\n'                 { asprintf (&$$, "%s",""); }
              |                            { asprintf (&$$, "%s", ""); }
              ;
 
-Declaration : T_INT T_ID '\n'                           { declaration (&$$, $2, &var_count, &vars); }   
+Declaration : T_INT T_ID '\n'                           { declaration (&$$, $2, &var_count, &vars); }
+            | T_INT T_ID '[' T_NUM ']' '\n'             { declrArray (&$$, $2, $4, &var_count, &vars); }   
             | T_INT T_ID '=' Expression '\n'            { declrExpr (&$$, $2, $4, &vars, &var_count); }
             | T_INT T_ID '=' T_READ '(' ')' '\n'        { declrRead (&$$, $2, &vars, &var_count); }
             | T_INT T_ID '=' T_READ '(' T_STR ')' '\n'  { declrReadStr (&$$, $2, $6, &vars, &var_count); }
@@ -123,10 +128,12 @@ Par : '(' Expression ')'    { asprintf (&$$, "%s", $2); }
     | Factor                { asprintf (&$$, "%s", $1); }
     ;
 
-Factor : T_NUM      { asprintf (&$$, "pushi %d\n", $1); }
-       | T_ID       { factorId (&$$, $1, &vars); }
-       | '-' T_NUM  { asprintf (&$$, "pushi %d\n", -$2); }
-       | '-' T_ID   { negfactorId (&$$, $2, &vars); }
+Factor : T_NUM                       { asprintf (&$$, "pushi %d\n", $1); }
+       | T_ID                        { factorId (&$$, $1, &vars); }
+       | T_ID '[' Expression ']'     { factorArray (&$$, $1, $3, &vars); }
+       | '-' T_NUM                   { asprintf (&$$, "pushi %d\n", -$2); }
+       | '-' T_ID                    { negfactorId (&$$, $2, &vars); }
+       | '-' T_ID '[' Expression ']' { negfactorArray (&$$, $2, $4, &vars); }
        ;
 %%
 

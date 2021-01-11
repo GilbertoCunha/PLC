@@ -3,7 +3,7 @@
 #include <string.h>
 #include "aux.h"
 
-int array_size (char *src) {
+int array_index (char *src, char **id) {
     int r;
     int size, end;
     char *aux = strdup(src);
@@ -13,8 +13,12 @@ int array_size (char *src) {
             aux[end-size-1] = src[end];
     if (size == end) r = -1;
     else {
-        aux[end] = '\0';
-        r = atoi (aux);
+        aux[end-size-2] = '\0';
+        if (isdigit(aux[0])) r = atoi (aux);
+        else {
+          asprintf (id, "%s", aux);
+          r = -1;
+        }
     }
     return r;
 }
