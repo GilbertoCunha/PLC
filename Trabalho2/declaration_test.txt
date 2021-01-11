@@ -13,7 +13,7 @@ int c = b % 10
 int array[20]
 int bruh = read("Value for bruh: ")
 
-%
+<<
 hello = -bruh
 write("Debug write\n")
 # As intruções devem começar com um % e terminar com outro
@@ -38,4 +38,4 @@ write(f"a: {a} | b: {b}\n")
 b = 2 == 2
 c = (0 and 0) or (0 and 1) or (1 and 0) or not (1 and 1)
 bruh = not (a and c)
-%
+>>

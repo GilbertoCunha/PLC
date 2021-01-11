@@ -28,6 +28,8 @@ write                                       { return T_WRITE; }
 {DIGIT}+                                    { yylval.num = atoi(yytext); return T_NUM; }  
 {LETTER}+_*{LETTER}*{DIGIT}*                { yylval.id = strdup(yytext); return T_ID; } 
 [\ \t\r]                                    { ; }
+\<\<                                        { return T_IB; }
+\>\>                                        { return T_IE; } 
 \=\=                                        { return T_EQ; }
 \!\=                                        { return T_NEQ; }
 \<\=                                        { return T_LE; }

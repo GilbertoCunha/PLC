@@ -11,7 +11,6 @@ FILE *vm;
 int yylex ();
 void yyerror (char *s);
 %}
-%error-verbose
 %locations
 
 %union {
@@ -28,7 +27,7 @@ void yyerror (char *s);
 %token T_EQ T_NEQ T_GE T_LE
 
 %token T_FOR T_IF T_ELSE
-%token T_START T_END
+%token T_START T_END T_IB T_IE
 
 %token T_READ T_WRITE
 %token T_LCOM T_MCOM T_FSS
@@ -36,14 +35,14 @@ void yyerror (char *s);
 %left '<' '>' '+' '-' '*' '/' '%' 
 %left T_AND T_OR T_NOT T_EQ T_NEQ T_GE T_LE
 
-%type <inst> Declarations Declaration
+%type <inst> Declarations Declaration DeclList SingDecl
 %type <inst> Instructions Instruction Atribution Write Conditional Cycle
 %type <inst> Par Factor Term Expression FString
 
 %start L
 
 %%
-L : Declarations '%' Instructions '%' { fprintf (vm, "%sstart\n%sstop", $1, $3); }
+L : Declarations T_IB Instructions T_IE { fprintf (vm, "%sstart\n%sstop", $1, $3); }
   | error '\n'
   ;
 
@@ -93,15 +92,22 @@ Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
              |                            { asprintf (&$$, "%s", ""); }
              ;
 
-Declaration : T_INT T_ID '\n'                           { declaration (&$$, $2, &var_count, &vars); }
-            | T_INT T_ID '[' T_NUM ']' '\n'             { declrArray (&$$, $2, $4, &var_count, &vars); }   
-            | T_INT T_ID '=' Expression '\n'            { declrExpr (&$$, $2, $4, &vars, &var_count); }
-            | T_INT T_ID '=' T_READ '(' ')' '\n'        { declrRead (&$$, $2, &vars, &var_count); }
-            | T_INT T_ID '=' T_READ '(' T_STR ')' '\n'  { declrReadStr (&$$, $2, $6, &vars, &var_count); }
-            | T_LCOM                                    { asprintf (&$$, "%s", ""); }
-            | T_MCOM                                    { asprintf (&$$, "%s", ""); }
-            | '\n'                                      { asprintf (&$$, "%s", ""); }
+Declaration : T_INT DeclList       { asprintf (&$$, "%s", $2); }     
+            | T_LCOM               { asprintf (&$$, "%s", ""); }
+            | T_MCOM               { asprintf (&$$, "%s", ""); }
+            | '\n'                 { asprintf (&$$, "%s", ""); }
             ;
+
+DeclList : SingDecl ',' DeclList        { asprintf (&$$, "%s%s", $1, $3); }
+         | SingDecl                     { asprintf (&$$, "%s", $1); }
+         ;
+
+SingDecl  : T_ID                                { declaration (&$$, $1, &var_count, &vars); }
+          | T_ID '[' T_NUM ']'                  { declrArray (&$$, $1, $3, &var_count, &vars); }
+          | T_ID '=' Expression                 { declrExpr (&$$, $1, $3, &vars, &var_count); }
+          | T_ID '=' T_READ '(' ')'             { declrRead (&$$, $1, &vars, &var_count); }
+          | T_ID '=' T_READ '(' T_STR ')'       { declrReadStr (&$$, $1, $5, &vars, &var_count); }
+          ;
 
 Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, $3); }
            | Expression T_NEQ Expression    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }

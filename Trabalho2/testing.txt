@@ -1,16 +1,12 @@
-int a
-int i
-int s = 0
-int e = 10
-int array[10]
+int a, i, s = 0, e = 10, array[10]
 
-%
+<<
 write(f"a: {a} | i: {i}\n")
 
-for (array, 10, 0, -2) ::
+for (i, 10, 0, -2) ::
     a = a + 2
 :;
 
 write(f"a: {a} | i: {i}\n")
 
-%
+>>
