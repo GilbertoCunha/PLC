@@ -44,8 +44,7 @@ void yyerror (char *s);
 
 %%
 L : Declarations '%' Instructions '%' { fprintf (vm, "%sstart\n%sstop", $1, $3); }
-  | error '\n'                  
-  |
+  | error '\n'
   ;
 
 Instructions : Instructions Instruction { asprintf (&$$, "%s%s", $1, $2); }
