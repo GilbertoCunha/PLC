@@ -1,12 +1,8 @@
-int a, i, s = 0, e = 10, array[10]
+int i, v[4] = [10, 20, 30, 40]
 
 <<
-write(f"a: {a} | i: {i}\n")
-
-for (i, 10, 0, -2) ::
-    a = a + 2
+for (i, 0, 4) ::
+    write (f"{v[i]} ")
 :;
-
-write(f"a: {a} | i: {i}\n")
-
+write ("\n")
 >>

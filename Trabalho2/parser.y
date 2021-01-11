@@ -5,6 +5,7 @@ int DEBUG, VERBOSE;
 int ERROR = 0, SYNT_ERROR = 0;
 int var_count = 0;
 int func_count = 0;
+int list_size = 0;
 AVLTree vars = NULL;
 FILE *vm;
 
@@ -35,7 +36,7 @@ void yyerror (char *s);
 %left '<' '>' '+' '-' '*' '/' '%' 
 %left T_AND T_OR T_NOT T_EQ T_NEQ T_GE T_LE
 
-%type <inst> Declarations Declaration DeclList SingDecl
+%type <inst> Declarations Declaration DeclList SingDecl List
 %type <inst> Instructions Instruction Atribution Write Conditional Cycle
 %type <inst> Par Factor Term Expression FString
 
@@ -79,12 +80,12 @@ FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3
         | T_FSTR                         { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression '\n'                               { exprAtr (&$$, $1, $3, &vars); }
-           | T_ID '=' T_READ '(' ')' '\n'                           { readAtr (&$$, $1, &vars); }
-           | T_ID '=' T_READ '(' T_STR ')' '\n'                     { readAtrStr (&$$, $1, $5, &vars); }
-           | T_ID '[' Expression ']' '=' Expression '\n'            { arrayAtr (&$$, $1, $3, $6, &vars); }
-           | T_ID '[' Expression ']' '=' T_READ '(' ')' '\n'        { readArrayAtr (&$$, $1, $3, &vars); }
-           | T_ID '[' Expression ']' '=' T_READ '(' T_STR ')' '\n'  { readArrayAtrStr (&$$, $1, $3, $8, &vars); }
+Atribution : T_ID '=' Expression '\n'                                           { exprAtr (&$$, $1, $3, &vars); }
+           | T_ID '=' T_READ '(' ')' '\n'                                       { readAtr (&$$, $1, &vars); }
+           | T_ID '=' T_READ '(' T_FSS FString '"' ')' '\n'                     { readAtrStr (&$$, $1, $6, &vars); }
+           | T_ID '[' Expression ']' '=' Expression '\n'                        { arrayAtr (&$$, $1, $3, $6, &vars); }
+           | T_ID '[' Expression ']' '=' T_READ '(' ')' '\n'                    { readArrayAtr (&$$, $1, $3, &vars); }
+           | T_ID '[' Expression ']' '=' T_READ '(' T_FSS FString '"' ')' '\n'  { readArrayAtrStr (&$$, $1, $3, $9, &vars); }
            ;
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
@@ -102,12 +103,17 @@ DeclList : SingDecl ',' DeclList        { asprintf (&$$, "%s%s", $1, $3); }
          | SingDecl                     { asprintf (&$$, "%s", $1); }
          ;
 
-SingDecl  : T_ID                                { declaration (&$$, $1, &var_count, &vars); }
-          | T_ID '[' T_NUM ']'                  { declrArray (&$$, $1, $3, &var_count, &vars); }
-          | T_ID '=' Expression                 { declrExpr (&$$, $1, $3, &vars, &var_count); }
-          | T_ID '=' T_READ '(' ')'             { declrRead (&$$, $1, &vars, &var_count); }
-          | T_ID '=' T_READ '(' T_STR ')'       { declrReadStr (&$$, $1, $5, &vars, &var_count); }
+SingDecl  : T_ID                                            { declaration (&$$, $1, &var_count, &vars); }
+          | T_ID '[' T_NUM ']'                              { declrArray (&$$, $1, $3, &var_count, &vars); }
+          | T_ID '=' Expression                             { declrExpr (&$$, $1, $3, &vars, &var_count); }
+          | T_ID '=' T_READ '(' ')'                         { declrRead (&$$, $1, &vars, &var_count); }
+          | T_ID '=' T_READ '(' T_FSS FString '"' ')'       { declrReadStr (&$$, $1, $6, &vars, &var_count); }
+          | T_ID '[' T_NUM ']' '=' '[' List ']'             { decList (&$$, $1, $3, $7, &vars, &var_count, &list_size); }     
           ;
+
+List : Expression ',' List          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
+     | Expression                   { asprintf (&$$, "%s", $1); list_size++; }
+     ;
 
 Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, $3); }
            | Expression T_NEQ Expression    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }

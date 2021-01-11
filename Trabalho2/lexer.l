@@ -45,7 +45,6 @@ f\"                                         { BEGIN FSTRING; return T_FSS; }
 <CBRACES>\}                                         { BEGIN FSTRING; return yytext[0]; }
 <CBRACES>{OPERATION}                                { return yytext[0]; }
 <CBRACES>{DIGIT}+                                   { yylval.num = atoi(yytext); return T_NUM; }
-<CBRACES>{LETTER}+_*{LETTER}*{DIGIT}*\[{DIGIT}+\]   { yylval.id = strdup(yytext); return T_ID; } 
 <CBRACES>{LETTER}+_*{LETTER}*{DIGIT}*               { yylval.id = strdup(yytext); return T_ID; }
 <CBRACES>[ ]                                        { ; }
 <CBRACES>(.|\n)                                     { return yytext[0]; }

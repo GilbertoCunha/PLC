@@ -28,3 +28,9 @@ void intIndex (char **r, char *id) {
     asprintf (&error_str, "Integer \"%s\" can't be indexed.", id);
     myyyerror (r, error_str);
 }
+
+void indexSizeDontMatch (char **r, char *id, int index, int size) {
+    char *error_str;
+    asprintf (&error_str, "Array \"%s\" declared with index %d but list is of size %d.", id, index, size);
+    myyyerror (r, error_str);
+}
