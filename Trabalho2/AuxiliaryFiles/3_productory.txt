@@ -1,10 +1,9 @@
-int i, r, tmp
+int i, r = 1, tmp
 int N = read("Quer calcular o produto de quantos números? ")
-r = 1
 
 <<
 for (i , 0 , N) ::
-    tmp = read()
+    tmp = read(f"{i+1}º número: ")
     r = r * tmp
 :;
 

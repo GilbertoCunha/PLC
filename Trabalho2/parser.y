@@ -3,7 +3,7 @@
 
 int DEBUG, VERBOSE;
 int ERROR = 0, SYNT_ERROR = 0;
-int var_count = 0;
+int sp_count = 0;
 int func_count = 0;
 int list_size = 0;
 AVLTree vars = NULL;
@@ -111,11 +111,11 @@ DeclList : SingDecl ',' DeclList        { asprintf (&$$, "%s%s", $1, $3); }
          | SingDecl                     { asprintf (&$$, "%s", $1); }
          ;
 
-SingDecl  : T_ID                                    { declaration (&$$, $1, &var_count, &vars); }
-          | T_ID '[' T_NUM ']'                      { declrArray (&$$, $1, $3, &var_count, &vars); }
-          | T_ID '=' Expression                     { declrExpr (&$$, $1, $3, &vars, &var_count); }
-          | T_ID '=' Read                           { declrRead (&$$, $1, $3, &vars, &var_count); }
-          | T_ID '[' T_NUM ']' '=' '[' List ']'     { decList (&$$, $1, $3, $7, &vars, &var_count, &list_size); }     
+SingDecl  : T_ID                                    { declaration (&$$, $1, &sp_count, &vars); }
+          | T_ID '[' T_NUM ']'                      { declrArray (&$$, $1, $3, &sp_count, &vars); }
+          | T_ID '=' Expression                     { declrExpr (&$$, $1, $3, &vars, &sp_count); }
+          | T_ID '=' Read                           { declrRead (&$$, $1, $3, &vars, &sp_count); }
+          | T_ID '[' T_NUM ']' '=' '[' List ']'     { decList (&$$, $1, $3, $7, &vars, &sp_count, &list_size); }     
           ;
 
 List : Expression ',' List          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
