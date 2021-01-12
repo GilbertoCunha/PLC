@@ -2,7 +2,7 @@
 #include "translator.h"
 
 int DEBUG, VERBOSE;
-int ERROR = 0, SYNT_ERROR = 0;
+int ERROR = 0;
 int sp_count = 0;
 int func_count = 0;
 int list_size = 0;
@@ -37,122 +37,128 @@ void yyerror (char *s);
 %left '<' '>' '+' '-' '*' '/' '%' 
 %left T_AND T_OR T_NOT T_EQ T_NEQ T_GE T_LE
 
-%type <inst> Declarations Declaration DeclList SingDecl List
-%type <inst> Instructions Instruction Atribution Read Write Conditional Cycle
-%type <inst> Par Factor Term Expression FString String
+%type <inst> declrs declr decllist singdecl list
+%type <inst> instrs instr atr read write cond cycle
+%type <inst> par factor term expr fstring string
 
 %start L
 
 %%
-L : Declarations T_IB Instructions T_IE { fprintf (vm, "%sstart\n%sstop", $1, $3); }
+
+L : declrs T_IB instrs T_IE { fprintf (vm, "%sstart\n%sstop", $1, $3); }
   | error '\n'
   ;
 
-Instructions : Instructions Instruction { asprintf (&$$, "%s%s", $1, $2); }
-             | error '\n'               { asprintf (&$$, "%s",""); }
-             |                          { asprintf (&$$, "%s", ""); }
-             ;
+endline : '\n'
+        | ';'
+        ;
 
-Instruction : Atribution     { asprintf (&$$, "%s", $1); }
-            | Write          { asprintf (&$$, "%s", $1); }
-            | Conditional    { asprintf (&$$, "%s", $1); }
-            | Cycle          { asprintf (&$$, "%s", $1); }
-            | T_LCOM         { asprintf (&$$, "%s", ""); }
-            | T_MCOM         { asprintf (&$$, "%s", ""); }
-            | '\n'           { asprintf (&$$, "%s", ""); }
-            ;
+instrs : instrs instr   { asprintf (&$$, "%s%s", $1, $2); }
+       | error endline  { asprintf (&$$, "%s",""); }
+       |                { asprintf (&$$, "%s", ""); }
+       ;
 
-Cycle : T_FOR '(' T_ID ',' Expression ',' Expression ')' T_START Instructions T_END { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
-      | T_FOR '(' T_ID ',' Expression ',' Expression ',' Expression ')' T_START Instructions T_END { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
-      | T_FOR T_ID '-' '>' T_ID T_START Instructions T_END              { forArrayV(&$$, $2, $5, $7, &vars, &func_count); }
-      | T_FOR '(' T_ID ',' T_ID ')' '-' '>' T_ID T_START Instructions T_END     { forArrayIV(&$$, $3, $5, $9, $11, &vars, &func_count); }    
+instr : atr       { asprintf (&$$, "%s", $1); }
+      | write     { asprintf (&$$, "%s", $1); }
+      | cond      { asprintf (&$$, "%s", $1); }
+      | cycle     { asprintf (&$$, "%s", $1); }
+      | T_LCOM    { asprintf (&$$, "%s", ""); }
+      | T_MCOM    { asprintf (&$$, "%s", ""); }
+      | endline   { asprintf (&$$, "%s", ""); }
       ;
 
-Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'                                     { ifInstr (&$$, $2, $5, &func_count); }
-            | T_IF Expression T_START '\n' Instructions T_START T_ELSE T_START '\n' Instructions T_END { ifElse (&$$, $2, $5, $10, &func_count); }
-            | T_IF Expression T_START '\n' Instructions T_START T_ELSE Conditional                     { ifElseif (&$$, $2, $5, $8, &func_count); }
-            ;
-
-Write : T_WRITE '(' String ')' '\n'   { asprintf (&$$, "%s", $3); }
+cycle : T_FOR '(' T_ID ',' expr ',' expr ')' T_START instrs T_END           { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
+      | T_FOR '(' T_ID ',' expr ',' expr ',' expr ')' T_START instrs T_END  { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
+      | T_FOR T_ID '-' '>' T_ID T_START instrs T_END                        { forArrayV(&$$, $2, $5, $7, &vars, &func_count); }
+      | T_FOR '(' T_ID ',' T_ID ')' '-' '>' T_ID T_START instrs T_END       { forArrayIV(&$$, $3, $5, $9, $11, &vars, &func_count); }    
       ;
 
-Read : T_READ '(' String ')' '\n'     { asprintf (&$$, "%s", $3); }
+cond : T_IF expr T_START instrs T_END endline                         { ifInstr (&$$, $2, $4, &func_count); }
+     | T_IF expr T_START instrs T_START T_ELSE T_START instrs T_END   { ifElse (&$$, $2, $4, $8, &func_count); }
+     | T_IF expr T_START instrs T_START T_ELSE cond                   { ifElseif (&$$, $2, $4, $7, &func_count); }
      ;
 
-String : T_FSS FString '"'    { asprintf (&$$, "%s", $2); }
+write : T_WRITE '(' string ')' endline   { asprintf (&$$, "%s", $3); }
+      ;
+
+read : T_READ '(' string ')' endline     { asprintf (&$$, "%s", $3); }
+     ;
+
+string : T_FSS fstring '"'    { asprintf (&$$, "%s", $2); }
        | T_STR                { asprintf (&$$, "pushs %s\nwrites\n", $1); }
        |                      { asprintf (&$$, "%s", ""); }
        ;
 
-FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3); }
-        | FString T_FSTR                 { asprintf (&$$, "%spushs \"%s\"\nwrites\n", $1, $2); }
-        | '{' Expression '}'             { asprintf (&$$, "%swritei\n", $2); }
-        | T_FSTR                         { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
+fstring : fstring '{' expr '}'     { asprintf (&$$, "%s%swritei\n", $1, $3); }
+        | fstring T_FSTR           { asprintf (&$$, "%spushs \"%s\"\nwrites\n", $1, $2); }
+        | '{' expr '}'             { asprintf (&$$, "%swritei\n", $2); }
+        | T_FSTR                   { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression '\n'                        { exprAtr (&$$, $1, $3, &vars); }
-           | T_ID '=' Read                                   { readAtr (&$$, $1, $3, &vars); }
-           | T_ID '[' Expression ']' '=' Expression '\n'     { arrayAtr (&$$, $1, $3, $6, &vars); }
-           | T_ID '[' Expression ']' '=' Read                { readArrayAtr (&$$, $1, $3, $6, &vars); }
-           ;
-
-Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
-             | error '\n'                 { asprintf (&$$, "%s",""); }
-             |                            { asprintf (&$$, "%s", ""); }
-             ;
-
-Declaration : T_INT DeclList       { asprintf (&$$, "%s", $2); }     
-            | T_LCOM               { asprintf (&$$, "%s", ""); }
-            | T_MCOM               { asprintf (&$$, "%s", ""); }
-            | '\n'                 { asprintf (&$$, "%s", ""); }
-            ;
-
-DeclList : SingDecl ',' DeclList        { asprintf (&$$, "%s%s", $1, $3); }
-         | SingDecl                     { asprintf (&$$, "%s", $1); }
-         ;
-
-SingDecl  : T_ID                                    { declaration (&$$, $1, &sp_count, &vars); }
-          | T_ID '[' T_NUM ']'                      { declrArray (&$$, $1, $3, &sp_count, &vars); }
-          | T_ID '=' Expression                     { declrExpr (&$$, $1, $3, &vars, &sp_count); }
-          | T_ID '=' Read                           { declrRead (&$$, $1, $3, &vars, &sp_count); }
-          | T_ID '[' T_NUM ']' '=' '[' List ']'     { decList (&$$, $1, $3, $7, &vars, &sp_count, &list_size); }     
-          ;
-
-List : Expression ',' List          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
-     | Expression                   { asprintf (&$$, "%s", $1); list_size++; }
-     ;
-
-Expression : Expression T_EQ Expression     { asprintf (&$$, "%s%sequal\n", $1, $3); }
-           | Expression T_NEQ Expression    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }
-           | Expression T_GE Expression     { asprintf (&$$, "%s%ssupeq\n", $1, $3); }
-           | Expression T_LE Expression     { asprintf (&$$, "%s%sinfeq\n", $1, $3); }
-           | Expression '>' Expression      { asprintf (&$$, "%s%ssup\n", $1, $3); }
-           | Expression '<' Expression      { asprintf (&$$, "%s%sinf\n", $1, $3); }
-           | Expression '+' Term            { asprintf (&$$, "%s%sadd\n", $1, $3); }
-           | Expression '-' Term            { asprintf (&$$, "%s%ssub\n", $1, $3); }
-           | Term                           { asprintf (&$$, "%s", $1); }
-           ;
-
-Term : Term '*' Term     { asprintf (&$$, "%s%smul\n", $1, $3); }
-     | Term '/' Term     { asprintf (&$$, "%s%sdiv\n", $1, $3); }
-     | Term '%' Term     { asprintf (&$$, "%s%smod\n", $1, $3); }
-     | Term T_AND Term   { asprintf (&$$, "%snot\nnot\n%snot\nnot\nmul\n", $1, $3); }
-     | Term T_OR Term    { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
-     | T_NOT Term        { asprintf (&$$, "%snot\n", $2); }
-     | Par               { asprintf (&$$, "%s", $1); }
-     ;
-
-Par : '(' Expression ')'    { asprintf (&$$, "%s", $2); }
-    | Factor                { asprintf (&$$, "%s", $1); }
+atr : T_ID '=' expr endline                 { exprAtr (&$$, $1, $3, &vars); }
+    | T_ID '=' read                         { readAtr (&$$, $1, $3, &vars); }
+    | T_ID '[' expr ']' '=' expr endline    { arrayAtr (&$$, $1, $3, $6, &vars); }
+    | T_ID '[' expr ']' '=' read            { readArrayAtr (&$$, $1, $3, $6, &vars); }
     ;
 
-Factor : T_NUM                       { asprintf (&$$, "pushi %d\n", $1); }
-       | T_ID                        { factorId (&$$, $1, &vars); }
-       | T_ID '[' Expression ']'     { factorArray (&$$, $1, $3, &vars); }
-       | '-' T_NUM                   { asprintf (&$$, "pushi %d\n", -$2); }
-       | '-' T_ID                    { negfactorId (&$$, $2, &vars); }
-       | '-' T_ID '[' Expression ']' { negfactorArray (&$$, $2, $4, &vars); }
+declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
+       | error endline   { asprintf (&$$, "%s",""); }
+       |                 { asprintf (&$$, "%s", ""); }
        ;
+
+declr : T_INT decllist    { asprintf (&$$, "%s", $2); }     
+      | T_LCOM            { asprintf (&$$, "%s", ""); }
+      | T_MCOM            { asprintf (&$$, "%s", ""); }
+      | endline           { asprintf (&$$, "%s", ""); }
+      ;
+
+decllist : singdecl ',' decllist    { asprintf (&$$, "%s%s", $1, $3); }
+         | singdecl                 { asprintf (&$$, "%s", $1); }
+         ;
+
+singdecl : T_ID                                    { declaration (&$$, $1, &sp_count, &vars); }
+         | T_ID '[' T_NUM ']'                      { declrArray (&$$, $1, $3, &sp_count, &vars); }
+         | T_ID '=' expr                           { declrExpr (&$$, $1, $3, &vars, &sp_count); }
+         | T_ID '=' read                           { declrRead (&$$, $1, $3, &vars, &sp_count); }
+         | T_ID '[' T_NUM ']' '=' '[' list ']'     { decList (&$$, $1, $3, $7, &vars, &sp_count, &list_size); }     
+         ;
+
+list : expr ',' list          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
+     | expr                   { asprintf (&$$, "%s", $1); list_size++; }
+     ;
+
+expr : expr T_EQ expr     { asprintf (&$$, "%s%sequal\n", $1, $3); }
+     | expr T_NEQ expr    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }
+     | expr T_GE expr     { asprintf (&$$, "%s%ssupeq\n", $1, $3); }
+     | expr T_LE expr     { asprintf (&$$, "%s%sinfeq\n", $1, $3); }
+     | expr '>' expr      { asprintf (&$$, "%s%ssup\n", $1, $3); }
+     | expr '<' expr      { asprintf (&$$, "%s%sinf\n", $1, $3); }
+     | expr '+' term      { asprintf (&$$, "%s%sadd\n", $1, $3); }
+     | expr '-' term      { asprintf (&$$, "%s%ssub\n", $1, $3); }
+     | term               { asprintf (&$$, "%s", $1); }
+     ;
+
+term : term '*' term      { asprintf (&$$, "%s%smul\n", $1, $3); }
+     | term '/' term      { asprintf (&$$, "%s%sdiv\n", $1, $3); }
+     | term '%' term      { asprintf (&$$, "%s%smod\n", $1, $3); }
+     | term T_AND term    { asprintf (&$$, "%snot\nnot\n%snot\nnot\nmul\n", $1, $3); }
+     | term T_OR term     { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
+     | T_NOT term         { asprintf (&$$, "%snot\n", $2); }
+     | par                { asprintf (&$$, "%s", $1); }
+     ;
+
+par : '(' expr ')'        { asprintf (&$$, "%s", $2); }
+    | factor              { asprintf (&$$, "%s", $1); }
+    ;
+
+factor : T_NUM                    { asprintf (&$$, "pushi %d\n", $1); }
+       | T_ID                     { factorId (&$$, $1, &vars); }
+       | T_ID '[' expr ']'        { factorArray (&$$, $1, $3, &vars); }
+       | '-' T_NUM                { asprintf (&$$, "pushi %d\n", -$2); }
+       | '-' T_ID                 { negfactorId (&$$, $2, &vars); }
+       | '-' T_ID '[' expr ']'    { negfactorArray (&$$, $2, $4, &vars); }
+       ;
+
 %%
 
 #include "lex.yy.c"
