@@ -16,7 +16,8 @@ void readAtr (char **r, char *id, AVLTree *vars);
 void arrayAtr (char **r, char *id, char *instr, char *expr, AVLTree *vars);
 void readArrayAtr (char **r, char *id, char *instr, AVLTree *vars);
 void readAtrStr (char **r, char *id, char *instr, AVLTree *vars);
-void readArrayAtrStr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars);
+void readArrayAtrStr (char **r, char *id, char *instr, char *s, AVLTree *vars);
+void readArrayAtrFStr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars);
 void declaration (char **r, char *id, int *count, AVLTree *vars);
 void declrArray (char **r, char *id, char *index, char *count, AVLTree *vars);
 void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count);
@@ -29,5 +30,7 @@ void negfactorId (char **r, char *id, AVLTree *vars);
 void negfactorArray (char **r, char *id, char *instr, AVLTree *vars);
 void forStartEnd (char **r, char *id, char *expr1, char *expr2, char *instr, AVLTree *vars, int *count);
 void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *instr, AVLTree *vars, int *count);
+void forArrayV (char **r, char *v, char *id, char *instr, AVLTree *vars, int *count);
+void forArrayIV (char **r, char *index, char *v, char *id, char *instr, AVLTree *vars, int *count); 
 
 #endif

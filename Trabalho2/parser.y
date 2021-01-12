@@ -63,6 +63,8 @@ Instruction : Atribution     { asprintf (&$$, "%s", $1); }
 
 Cycle : T_FOR '(' T_ID ',' Expression ',' Expression ')' T_START Instructions T_END { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
       | T_FOR '(' T_ID ',' Expression ',' Expression ',' Expression ')' T_START Instructions T_END { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
+      | T_FOR T_ID '-' '>' T_ID T_START Instructions T_END              { forArrayV(&$$, $2, $5, $7, &vars, &func_count); }
+      | T_FOR '(' T_ID ',' T_ID ')' '-' '>' T_ID T_START Instructions T_END     { forArrayIV(&$$, $3, $5, $9, $11, &vars, &func_count); }    
       ;
 
 Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'                                     { ifInstr (&$$, $2, $5, &func_count); }
@@ -85,7 +87,8 @@ Atribution : T_ID '=' Expression '\n'                                           
            | T_ID '=' T_READ '(' T_FSS FString '"' ')' '\n'                     { readAtrStr (&$$, $1, $6, &vars); }
            | T_ID '[' Expression ']' '=' Expression '\n'                        { arrayAtr (&$$, $1, $3, $6, &vars); }
            | T_ID '[' Expression ']' '=' T_READ '(' ')' '\n'                    { readArrayAtr (&$$, $1, $3, &vars); }
-           | T_ID '[' Expression ']' '=' T_READ '(' T_FSS FString '"' ')' '\n'  { readArrayAtrStr (&$$, $1, $3, $9, &vars); }
+           | T_ID '[' Expression ']' '=' T_READ '(' T_STR ')' '\n'              { readArrayAtrStr (&$$, $1, $3, $8, &vars); }
+           | T_ID '[' Expression ']' '=' T_READ '(' T_FSS FString '"' ')' '\n'  { readArrayAtrFStr (&$$, $1, $3, $9, &vars); }
            ;
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }

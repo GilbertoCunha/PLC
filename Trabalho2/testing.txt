@@ -1,8 +1,8 @@
-int i, v[4] = [10, 20, 30, 40]
+int i, v, a[4] = [10, 20, 30, 40]
 
 <<
-for (i, 0, 4) ::
-    write (f"{v[i]} ")
+for (i, v) -> a ::
+    write (f"index: {i} | value: {v}\n")
 :;
 write ("\n")
 >>
