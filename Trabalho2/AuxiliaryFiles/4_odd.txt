@@ -1,11 +1,13 @@
-int count, for;
-int seq[5] = [1, 10, 7, 6, 3];
+int i, count
+int seq[5] = [1, 10, 7, 6, 3]
 
-for (count, 0, 5) ::
-
-    if seq[count]%2 == 0 and count == count or count == count or count != not(count) ::
-        write("O elemento {count} do array com valor {seq[count]} é ímpar\n");
+<<
+for (i, 0, 5) ::
+    if seq[count]%2 != 0 ::
+        write("O {count}º elemento do array (com valor {seq[count]}) é ímpar\n");
+        count = count + 1
     :;
 :;
 
 write("O número de elementos ímpares é {count}\n");
+>>

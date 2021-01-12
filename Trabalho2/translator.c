@@ -31,23 +31,7 @@ void arrayAtr (char **r, char *id, char *instr, char *expr, AVLTree *vars) {
     else if (strcmp (class, "var")==0) intIndex (r, id);
 }
 
-void readAtr (char **r, char *id, AVLTree *vars) {
-    int sp, size;
-    char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
-    else if (strcmp (class, "var")==0) asprintf (r, "read\natoi\nstoreg %d\n", sp);
-    else if (strcmp (class, "array")==0) assignIntArray (r, id);
-}
-
-void readArrayAtr (char **r, char *id, char *instr, AVLTree *vars) {
-    int sp, size;
-    char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
-    else if (strcmp (class, "array")==0) asprintf (r, "pushgp\npushi %d\npadd\n%sread\natoi\nstoren\n", sp, instr);
-    else if (strcmp (class, "var")==0) intIndex (r, id);
-}
-
-void readAtrStr (char **r, char *id, char *instr, AVLTree *vars) {
+void readAtr (char **r, char *id, char *instr, AVLTree *vars) {
     int sp, size;
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
@@ -55,15 +39,7 @@ void readAtrStr (char **r, char *id, char *instr, AVLTree *vars) {
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
 }
 
-void readArrayAtrStr (char **r, char *id, char *instr, char *s, AVLTree *vars) {
-    int sp, size;
-    char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
-    else if (strcmp (class, "array")==0) asprintf (r, "pushs %s\nwrites\npushgp\npushi %d\npadd\n%sread\natoi\nstoren\n", s, sp, instr);
-    else if (strcmp (class, "var")==0) intIndex (r, id);
-}
-
-void readArrayAtrFStr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars) {
+void readArrayAtr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars) {
     int sp, size;
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
@@ -80,7 +56,7 @@ void declaration (char **r, char *id, int *count, AVLTree *vars) {
 void declrArray (char **r, char *id, char *index, char *count, AVLTree *vars) {
     insertAVL (vars, id, "array", "int", index, *count);
     asprintf (r, "pushn %d\n", index);
-    *count = *count + 1;
+    *count = *count + index;
 }
 
 void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count) {
@@ -89,13 +65,7 @@ void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count) {
     *count = *count + 1;
 }
 
-void declrRead (char **r, char *id, AVLTree *vars, int *count) {
-    insertAVL (vars, id, "var", "int", 1, *count);
-    asprintf (r, "pushn 1\nread\natoi\nstoreg %d\n", *count);
-    *count = *count + 1;
-}
-
-void declrReadStr (char **r, char *id, char *instr, AVLTree *vars, int *count) {
+void declrRead (char **r, char *id, char *instr, AVLTree *vars, int *count) {
     insertAVL (vars, id, "var", "int", 1, *count);
     asprintf (r, "%spushn 1\nread\natoi\nstoreg %d\n", instr, *count);
     *count = *count + 1;
@@ -105,7 +75,7 @@ void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *co
     if (*size == index) {
         insertAVL (vars, id, "array", "int", index, *count);
         asprintf (r, "%s", instr);
-        *count = *count + 1;
+        *count = *count + index;
     }
     else indexSizeDontMatch (r, id, index, *size);
     *size = 0;

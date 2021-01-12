@@ -1,5 +1,4 @@
 int i, v, a[4] = [10, 20, 30, 40]
-
 <<
 for (i, v) -> a ::
     write (f"index: {i} | value: {v}\n")

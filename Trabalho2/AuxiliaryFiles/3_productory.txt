@@ -1,10 +1,12 @@
-int i , r , tmp;
-int N = read();
-r = 1;
+int i, r, tmp
+int N = read("Quer calcular o produto de quantos números? ")
+r = 1
 
+<<
 for (i , 0 , N) ::
-    tmp = read();
-    r = r * tmp;
+    tmp = read()
+    r = r * tmp
 :;
 
-write ("O produto é {r}\n");
+write (f"O produto dos números é {r}\n")
+>>

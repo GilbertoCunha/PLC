@@ -5,7 +5,7 @@ int r
 <<
 for (i, 0, 4) ::
     # Adicionar uso de variáveis como índices de arrays
-    N[i] = read("Introduza o lado do quadrado: ")
+    N[i] = read(f"{i+1}º lado do quadrado: ")
 
     if i>0 ::
         if N[i] != N[i-1] ::

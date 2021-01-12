@@ -12,6 +12,7 @@ FILE *vm;
 int yylex ();
 void yyerror (char *s);
 %}
+%error-verbose
 %locations
 
 %union {
@@ -37,8 +38,8 @@ void yyerror (char *s);
 %left T_AND T_OR T_NOT T_EQ T_NEQ T_GE T_LE
 
 %type <inst> Declarations Declaration DeclList SingDecl List
-%type <inst> Instructions Instruction Atribution Write Conditional Cycle
-%type <inst> Par Factor Term Expression FString
+%type <inst> Instructions Instruction Atribution Read Write Conditional Cycle
+%type <inst> Par Factor Term Expression FString String
 
 %start L
 
@@ -72,9 +73,16 @@ Conditional : T_IF Expression T_START '\n' Instructions T_END '\n'              
             | T_IF Expression T_START '\n' Instructions T_START T_ELSE Conditional                     { ifElseif (&$$, $2, $5, $8, &func_count); }
             ;
 
-Write : T_WRITE '(' T_FSS FString '"' ')' '\n'   { asprintf (&$$, "%s", $4); }
-      | T_WRITE '(' T_STR ')' '\n'               { asprintf (&$$, "pushs %s\nwrites\n", $3); }
+Write : T_WRITE '(' String ')' '\n'   { asprintf (&$$, "%s", $3); }
       ;
+
+Read : T_READ '(' String ')' '\n'     { asprintf (&$$, "%s", $3); }
+     ;
+
+String : T_FSS FString '"'    { asprintf (&$$, "%s", $2); }
+       | T_STR                { asprintf (&$$, "pushs %s\nwrites\n", $1); }
+       |                      { asprintf (&$$, "%s", ""); }
+       ;
 
 FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3); }
         | FString T_FSTR                 { asprintf (&$$, "%spushs \"%s\"\nwrites\n", $1, $2); }
@@ -82,13 +90,10 @@ FString : FString '{' Expression '}'     { asprintf (&$$, "%s%swritei\n", $1, $3
         | T_FSTR                         { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-Atribution : T_ID '=' Expression '\n'                                           { exprAtr (&$$, $1, $3, &vars); }
-           | T_ID '=' T_READ '(' ')' '\n'                                       { readAtr (&$$, $1, &vars); }
-           | T_ID '=' T_READ '(' T_FSS FString '"' ')' '\n'                     { readAtrStr (&$$, $1, $6, &vars); }
-           | T_ID '[' Expression ']' '=' Expression '\n'                        { arrayAtr (&$$, $1, $3, $6, &vars); }
-           | T_ID '[' Expression ']' '=' T_READ '(' ')' '\n'                    { readArrayAtr (&$$, $1, $3, &vars); }
-           | T_ID '[' Expression ']' '=' T_READ '(' T_STR ')' '\n'              { readArrayAtrStr (&$$, $1, $3, $8, &vars); }
-           | T_ID '[' Expression ']' '=' T_READ '(' T_FSS FString '"' ')' '\n'  { readArrayAtrFStr (&$$, $1, $3, $9, &vars); }
+Atribution : T_ID '=' Expression '\n'                        { exprAtr (&$$, $1, $3, &vars); }
+           | T_ID '=' Read                                   { readAtr (&$$, $1, $3, &vars); }
+           | T_ID '[' Expression ']' '=' Expression '\n'     { arrayAtr (&$$, $1, $3, $6, &vars); }
+           | T_ID '[' Expression ']' '=' Read                { readArrayAtr (&$$, $1, $3, $6, &vars); }
            ;
 
 Declarations : Declarations Declaration   { asprintf (&$$, "%s%s", $1, $2); }
@@ -106,12 +111,11 @@ DeclList : SingDecl ',' DeclList        { asprintf (&$$, "%s%s", $1, $3); }
          | SingDecl                     { asprintf (&$$, "%s", $1); }
          ;
 
-SingDecl  : T_ID                                            { declaration (&$$, $1, &var_count, &vars); }
-          | T_ID '[' T_NUM ']'                              { declrArray (&$$, $1, $3, &var_count, &vars); }
-          | T_ID '=' Expression                             { declrExpr (&$$, $1, $3, &vars, &var_count); }
-          | T_ID '=' T_READ '(' ')'                         { declrRead (&$$, $1, &vars, &var_count); }
-          | T_ID '=' T_READ '(' T_FSS FString '"' ')'       { declrReadStr (&$$, $1, $6, &vars, &var_count); }
-          | T_ID '[' T_NUM ']' '=' '[' List ']'             { decList (&$$, $1, $3, $7, &vars, &var_count, &list_size); }     
+SingDecl  : T_ID                                    { declaration (&$$, $1, &var_count, &vars); }
+          | T_ID '[' T_NUM ']'                      { declrArray (&$$, $1, $3, &var_count, &vars); }
+          | T_ID '=' Expression                     { declrExpr (&$$, $1, $3, &vars, &var_count); }
+          | T_ID '=' Read                           { declrRead (&$$, $1, $3, &vars, &var_count); }
+          | T_ID '[' T_NUM ']' '=' '[' List ']'     { decList (&$$, $1, $3, $7, &vars, &var_count, &list_size); }     
           ;
 
 List : Expression ',' List          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
