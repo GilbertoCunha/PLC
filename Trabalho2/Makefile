@@ -1,6 +1,6 @@
 debug=no
 verbose=no
-file=declaration_test.txt
+file=selectionsort.txt
 
 compile: lexer.l parser.y AVLTrees.h AVLTrees.c
 	@yacc -d parser.y

@@ -1,0 +1,41 @@
+"""
+Este é um programa exemplo da nossa linguagem
+
+Autores:
+Gilberto Cunha - MIEFis
+Tomás Carneiro - MIEFis
+"""
+
+int i, j, aux, vaux, v[10] = [-3, 4, 7, 21, 43, 6, 14, -33, 9, 0]
+
+:: mcbruh ::
+    
+:;
+
+:: fatorial ::
+    i = 21
+    j = 34
+:;
+
+|| main ||
+    write ("Array:        ")
+    for (i, vaux) -> v ::
+        write (f"{vaux} ")
+    :;
+    write ("\nSorted array: ")
+    for (i, 0, 10) ::
+
+
+        aux = i
+        for (j, i+1, 10) ::
+            if v[j] < v[aux] ::
+                aux = j;
+            :;
+        :;
+        vaux = v[i]
+        v[i] = v[aux]
+        v[aux] = vaux
+        write (f"{v[i]} ")
+    :;
+    write ("\n")
+:;

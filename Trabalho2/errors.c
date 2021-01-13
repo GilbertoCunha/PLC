@@ -7,7 +7,7 @@ void myyyerror (char **r, char *s) {
 
 void notDeclared (char **r, char *id) {
     char *error_str;
-    asprintf (&error_str, "Can't assign to variable \"%s\" because it hasn't been declared.", id);
+    asprintf (&error_str, "Can't access variable \"%s\" because it hasn't been declared.", id);
     myyyerror(r, error_str);
 }
 
@@ -19,7 +19,7 @@ void outOfRange (char **r, char *id, char size, char index) {
 
 void assignIntArray (char **r, char *id) {
     char *error_str;
-    asprintf (&error_str, "Can't assign integer to array \"%s\".", id);
+    asprintf (&error_str, "Array \"%s\" can't be treated as an integer.", id);
     myyyerror (r, error_str);
 }
 
@@ -31,6 +31,12 @@ void intIndex (char **r, char *id) {
 
 void indexSizeDontMatch (char **r, char *id, int index, int size) {
     char *error_str;
-    asprintf (&error_str, "Array \"%s\" declared with index %d but list is of size %d.", id, index, size);
+    asprintf (&error_str, "Array \"%s\" declared with size %d but list has size %d.", id, index, size);
+    myyyerror (r, error_str);
+}
+
+void reDeclaration (char **r, char *id) {
+    char *error_str;
+    asprintf (&error_str, "Variable \"%s\" redeclared.", id);
     myyyerror (r, error_str);
 }

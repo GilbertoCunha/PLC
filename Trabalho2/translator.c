@@ -48,34 +48,54 @@ void readArrayAtr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars
 }
 
 void declaration (char **r, char *id, int *count, AVLTree *vars) {
-    insertAVL (vars, id, "var", "int", 1, *count);
-    asprintf (r, "pushn 1\n");
-    *count = *count + 1;
+    char *class, *type; int size, sp;
+    if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
+    else {
+        insertAVL (vars, id, "var", "int", 1, *count);
+        asprintf (r, "pushn 1\n");
+        *count = *count + 1;
+    }
 }
 
 void declrArray (char **r, char *id, char *index, char *count, AVLTree *vars) {
-    insertAVL (vars, id, "array", "int", index, *count);
-    asprintf (r, "pushn %d\n", index);
-    *count = *count + index;
+    char *class, *type; int size, sp;
+    if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
+    else {
+        insertAVL (vars, id, "array", "int", index, *count);
+        asprintf (r, "pushn %d\n", index);
+        *count = *count + index;
+    }
 }
 
 void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count) {
-    insertAVL (vars, id, "var", "int", 1, *count);
-    asprintf (r, "pushn 1\n%sstoreg %d\n", expr, *count);
-    *count = *count + 1;
+    char *class, *type; int size, sp;
+    if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
+    else {
+        insertAVL (vars, id, "var", "int", 1, *count);
+        asprintf (r, "pushn 1\n%sstoreg %d\n", expr, *count);
+        *count = *count + 1;
+    }
 }
 
 void declrRead (char **r, char *id, char *instr, AVLTree *vars, int *count) {
-    insertAVL (vars, id, "var", "int", 1, *count);
-    asprintf (r, "%spushn 1\nread\natoi\nstoreg %d\n", instr, *count);
-    *count = *count + 1;
+    char *class, *type; int size, sp;
+    if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
+    else {
+        insertAVL (vars, id, "var", "int", 1, *count);
+        asprintf (r, "%spushn 1\nread\natoi\nstoreg %d\n", instr, *count);
+        *count = *count + 1;
+    }
 }
 
 void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *count, int *size) {
     if (*size == index) {
-        insertAVL (vars, id, "array", "int", index, *count);
-        asprintf (r, "%s", instr);
-        *count = *count + index;
+        char *class, *type; int size, sp;
+        if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
+        else {
+            insertAVL (vars, id, "array", "int", index, *count);
+            asprintf (r, "%s", instr);
+            *count = *count + index;
+        }
     }
     else indexSizeDontMatch (r, id, index, *size);
     *size = 0;

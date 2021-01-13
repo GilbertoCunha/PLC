@@ -1,11 +1,3 @@
-"""
-Este é um programa exemplo da nossa linguagem
-
-Autores:
-Gilberto Cunha - MIEFis
-Tomás Carneiro - MIEFis
-"""
-
 # Deve começar pelas declarações
 int a = 2 * (1 + 2)
 int b = 20 + a
