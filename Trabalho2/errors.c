@@ -5,9 +5,9 @@ void myyyerror (char **r, char *s) {
     yyerror (s);
 }
 
-void notDeclared (char **r, char *id) {
+void notDeclared (char **r, char *id, char *type) {
     char *error_str;
-    asprintf (&error_str, "Can't access variable \"%s\" because it hasn't been declared.", id);
+    asprintf (&error_str, "Can't access %s \"%s\" because it hasn't been declared.", type, id);
     myyyerror(r, error_str);
 }
 
@@ -48,5 +48,11 @@ void indexSizeDontMatch (char **r, char *id, int index, int size) {
 void reDeclaration (char **r, char *id) {
     char *error_str;
     asprintf (&error_str, "Variable \"%s\" redeclared.", id);
+    myyyerror (r, error_str);
+}
+
+void assignFunc (char **r, char *id) {
+    char *error_str;
+    asprintf (&error_str, "Function \"%s\" value not accessable.", id);
     myyyerror (r, error_str);
 }

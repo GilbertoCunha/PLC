@@ -46,6 +46,7 @@ void yyerror (char *s);
 %%
 
 L : declrs START funcs '|' main END { fprintf (vm, "%sstart\n%sstop\n%s", $1, $5, $3); }
+  | declrs '|' main END             { fprintf (vm, "%sstart\n%sstop\n", $1, $3); }
   | error '\n'
   ;
 
@@ -54,8 +55,8 @@ endline : '\n' | ';' ;
 main : '|' MAIN '|' '|' instrs      { asprintf (&$$, "%s", $5); }
      ;
 
-funcs : START ID START instrs END funcs { asprintf (&$$, "\n%s:\nnop\n%sreturn\n%s", $2, $4, $6); }
-      | ID START instrs END funcs       { asprintf (&$$, "\n%s:\nnop\n%sreturn\n%s", $1, $3, $5); }
+funcs : START ID START instrs END funcs { declrFunc (&$$, $2, $4, $6, &vars, &func_count); }
+      | ID START instrs END funcs       { declrFunc (&$$, $1, $3, $5, &vars, &func_count); }
       | '\n' funcs                      { asprintf (&$$, "%s", $2); }
       | error endline                   { asprintf (&$$, "%s", ""); }
       |                                 { FUNC = 0; asprintf (&$$, "%s", ""); }
@@ -76,13 +77,14 @@ instr : atr       { asprintf (&$$, "%s", $1); }
       | endline   { asprintf (&$$, "%s", ""); }
       ;
 
-fcall : ID '(' ')'  { asprintf (&$$, "pusha %s\ncall\nnop\n", $1); }
+fcall : ID '(' ')'  { funcCall (&$$, $1, &vars); }
       ;
 
-cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END          { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
-      | FOR '(' ID ',' expr ',' expr ',' expr ')' START instrs END { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
-      | FOR ID '-' '>' ID START instrs END                         { forArrayV(&$$, $2, $5, $7, &vars, &func_count); }
-      | FOR '(' ID ',' ID ')' '-' '>' ID START instrs END          { forArrayIV(&$$, $3, $5, $9, $11, &vars, &func_count); }    
+cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END                  { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
+      | FOR '(' ID ',' expr ',' expr ',' expr ')' START instrs END         { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
+      | FOR ID '-' '>' ID START instrs END                                 { forArrayV (&$$, $2, $5, $7, &vars, &func_count); }
+      | FOR '(' ID ',' ID ')' '-' '>' ID START instrs END                  { forArrayIV (&$$, $3, $5, $9, $11, &vars, &func_count); }    
+      | FOR '(' ID '=' expr ',' expr ',' ID '=' expr ')' START instrs END  { forCond (&$$, $3, $9, $5, $7, $11, $14, &vars, &func_count); }
       ;
 
 cond : IF expr START instrs END                          { ifInstr (&$$, $2, $4, &func_count); }
@@ -153,7 +155,7 @@ expr : expr EQ expr     { asprintf (&$$, "%s%sequal\n", $1, $3); }
 term : term '*' term    { asprintf (&$$, "%s%smul\n", $1, $3); }
      | term '/' term    { asprintf (&$$, "%s%sdiv\n", $1, $3); }
      | term '%' term    { asprintf (&$$, "%s%smod\n", $1, $3); }
-     | term AND term    { asprintf (&$$, "%snot\nnot\n%snot\nnot\nmul\n", $1, $3); }
+     | term AND term    { asprintf (&$$, "%sdup 1\njz func%d\n%smul\nfunc%d:\n", $1, func_count, $3, func_count); func_count++; }
      | term OR term     { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
      | NOT term         { asprintf (&$$, "%snot\n", $2); }
      | par              { asprintf (&$$, "%s", $1); }

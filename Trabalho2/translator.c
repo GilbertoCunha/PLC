@@ -18,40 +18,44 @@ void ifElseif (char **r, char *expr, char *instr, char *cond, int *count) {
 void exprAtr (char **r, char *id, char *expr, AVLTree *vars) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "variable");
     else if (strcmp (class, "var")==0) asprintf (r, "%sstoreg %d\n", expr, sp);
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void arrayAtr (char **r, char *id, char *instr, char *expr, AVLTree *vars, int *count, int line) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "array");
     else if (strcmp (class, "array")==0) {
         char *error_str = outOfRange (id, instr, size, count, line);
         asprintf (r, "%spushgp\npushi %d\npadd\n%s%sstoren\n", 
                   error_str, sp, instr, expr);
     }
     else if (strcmp (class, "var")==0) intIndex (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void readAtr (char **r, char *id, char *instr, AVLTree *vars) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "variable");
     else if (strcmp (class, "var")==0) asprintf (r, "%sread\natoi\nstoreg %d\n", instr, sp);
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void readArrayAtr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars, int *count, int line) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "array");
     else if (strcmp (class, "array")==0) {
         char *error_str = outOfRange (id, instr1, size, count, line);
         asprintf (r, "%spushgp\npushi %d\npadd\n%s%sread\natoi\nstoren\n", error_str, sp, instr2, instr1);
     }
     else if (strcmp (class, "var")==0) intIndex (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void declaration (char **r, char *id, int *count, AVLTree *vars) {
@@ -108,60 +112,75 @@ void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *co
     *size = 0;
 }
 
+void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count) {
+    char *class, *type; int size, sp;
+    if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
+    else {
+        insertAVL (vars, id, "func", "void", 1, *count);
+        asprintf (r, "\n%s:\nnop\n%sreturn\n%s", id, instrs1, instrs2);
+        *count = *count + 1;
+    }
+}
+
 void factorId (char **r, char *id, AVLTree *vars) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "variable");
     else if (strcmp (class, "var")==0) asprintf (r, "pushg %d\n", sp);
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void factorArray (char **r, char *id, char *instr, AVLTree *vars, int *count, int line) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "array");
     else if (strcmp (class, "array")==0) {
-        char *error_str = outOfRange (id, instr, size, count, line);
-        asprintf (r, "%spushgp\npushi %d\npadd\n%sloadn\n", error_str, sp, instr);
+        // char *error_str = outOfRange (id, instr, size, count, line);
+        asprintf (r, "pushgp\npushi %d\npadd\n%sloadn\n", sp, instr);
     }
     else if (strcmp (class, "var")==0) intIndex (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void negfactorId (char **r, char *id, AVLTree *vars) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "variable");
     else if (strcmp (class, "var")==0) asprintf (r, "pushg %d\npushi -1\nmul\n", sp);
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void negfactorArray (char **r, char *id, char *instr, AVLTree *vars, int *count, int line) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "array");
     else if (strcmp (class, "array")==0) {
         char *error_str = outOfRange (id, instr, size, count, line);
         asprintf (r, "%spushgp\npushi %d\npadd\n%sloadn\npushi -1\nmul\n", error_str, sp, instr);
     }
     else if (strcmp (class, "var")==0) intIndex (r, id);
+    else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
 
 void forStartEnd (char **r, char *id, char *expr1, char *expr2, char *instr, AVLTree *vars, int *count) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "variable");
     else if (strcmp (class, "var")==0) {
         asprintf (r, "%s%sinf\njz cycle%d\n%sstoreg %d\ncycle%d:\n%spushg %d\npushi 1\nadd\nstoreg %d\npushg %d\n%ssupeq\njz cycle%d\ncycle%d:\n", 
                   expr1, expr2, *count + 1, expr1, sp, *count, instr, sp, sp, sp, expr2, *count, *count + 1);
         *count = *count + 2;
     }
     else if (strcmp (class, "array")==0) myyyerror (r, "Can't iterate variable of array, use integer instead.");
+    else if (strcmp (class, "func")==0) myyyerror (r, "Can't iterate function, use integer instead.");
 }
 
 void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *instr, AVLTree *vars, int *count) {
     int sp, size;
     char *class, *type;
-    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "variable");
     else if (strcmp (class, "var")==0) {
         char *aux, *aux1;
         asprintf (&aux, "%s%s%spushi 0\ninf\njz cycle%d\ncycle%d:\ninfeq\njz cycle%d\njump cycle%d\ncycle%d:\nsupeq\njz cycle%d\njump cycle%d\n", 
@@ -173,6 +192,7 @@ void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *i
         *count = *count + 8;
     }
     else if (strcmp (class, "array")==0) myyyerror (r, "Can't iterate variable of array, use integer instead.");
+    else if (strcmp (class, "func")==0) myyyerror (r, "Can't iterate function, use integer instead.");
 }
 
 void forArrayV (char **r, char *v, char *id, char *instr, AVLTree *vars, int *count) {
@@ -182,11 +202,11 @@ void forArrayV (char **r, char *v, char *id, char *instr, AVLTree *vars, int *co
 void forArrayIV (char **r, char *index, char *v, char *id, char *instr, AVLTree *vars, int *count) {
     int spi, spv, spa, size;
     char *class, *type, *ind_id;
-    if (!searchAVL (*vars, index, &class, &type, &size, &spi)) notDeclared (r, index);
+    if (!searchAVL (*vars, index, &class, &type, &size, &spi)) notDeclared (r, index, "variable");
     else if (strcmp (class, "var")!=0) myyyerror (r, "Must use integer to hold array indices.");
-    else if (!searchAVL (*vars, v, &class, &type, &size, &spv)) notDeclared (r, v);
+    else if (!searchAVL (*vars, v, &class, &type, &size, &spv)) notDeclared (r, v, "variable");
     else if (strcmp (class, "var")!=0) myyyerror (r, "Must use integer to hold array values.");
-    else if (!searchAVL (*vars, id, &class, &type, &size, &spa)) notDeclared (r, id);
+    else if (!searchAVL (*vars, id, &class, &type, &size, &spa)) notDeclared (r, id, "array");
     else if (strcmp (class, "array")==0) {
         char *init, *update, *jump;
         asprintf (&init, "pushi 0\nstoreg %d\npushgp\npushi %d\npadd\npushi 0\nloadn\nstoreg %d\n", 
@@ -198,4 +218,26 @@ void forArrayIV (char **r, char *index, char *v, char *id, char *instr, AVLTree 
         *count = *count + 1;
     }
     else if (strcmp (class, "var")==0) myyyerror (r, "Can't iterate integer, use array instead.");
+    else if (strcmp (class, "func")==0) myyyerror (r, "Can't iterate function, use integer instead.");
+}
+
+void forCond (char **r, char *id1, char *id2, char *expr1, char *expr2, char *expr3, char *instrs, AVLTree *vars, int *count) {
+    int sp, size;
+    char *class, *type;
+    if (!searchAVL (*vars, id1, &class, &type, &size, &sp)) notDeclared (r, id1, "variable");
+    else if (strcmp (class, "var")!=0) myyyerror (r, "Must use integer to hold array indices.");
+    else if (strcmp (id1, id2) != 0) myyyerror (r, "Update rule and declaration rule use different variables.");
+    else {
+        asprintf (r, "%sstoreg %d\n%sjz cycle%d\ncycle%d:\n%s%sstoreg %d\n%snot\njz cycle%d\ncycle%d:\n", 
+                  expr1, sp, expr2, *count + 1, *count, instrs, expr3, sp, expr2, *count, *count + 1);
+        *count = *count + 2;
+    }
+}
+
+void funcCall (char **r, char *id, AVLTree *vars) {
+    int sp, size;
+    char *class, *type;
+    if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "function");
+    else if (strcmp (class, "func")!=0) myyyerror (r, "Variable not callable.");
+    else asprintf (r, "pusha %s\ncall\nnop\n", id);
 }

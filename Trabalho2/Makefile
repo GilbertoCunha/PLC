@@ -1,9 +1,9 @@
 debug=no
 verbose=no
-file=Examples/selectionsort.txt
+file=Examples/insertionsort.txt
 
 compile: lexer.l parser.y AVLTrees.h AVLTrees.c
-	@yacc -d parser.y
+	@yacc -d parser.y -Wcounterexamples
 	@flex lexer.l
 	@gcc AVLTrees.c errors.c translator.c aux.c y.tab.c -w
 	@./a.out $(debug) $(verbose) < $(file)

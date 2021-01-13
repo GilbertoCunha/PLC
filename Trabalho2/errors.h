@@ -9,11 +9,12 @@
 #include "aux.h"
 
 void myyyerror (char **r, char *s);
-void notDeclared (char **r, char *id);
+void notDeclared (char **r, char *id, char *type);
 char *outOfRange (char *id, char *instr, int size, int *count, int line);
 void assignIntArray (char **r, char *id);
 void intIndex (char **r, char *id);
 void indexSizeDontMatch (char **r, char *id, int index, int size);
 void reDeclaration (char **r, char *id);
+void assignFunc (char **r, char *id);
 
 #endif
