@@ -38,14 +38,14 @@ void yyerror (char *s);
 %left AND OR NOT EQ NEQ GE LE
 
 %type <inst> main funcs declrs declr decllist singdecl list
-%type <inst> instrs instr atr read write cond cycle
+%type <inst> instrs instr atr read write cond cycle fcall
 %type <inst> par factor term expr fstring string
 
 %start L
 
 %%
 
-L : declrs START funcs '|' main END { fprintf (vm, "%sstart\n%sstop%s", $1, $5, $3); }
+L : declrs START funcs '|' main END { fprintf (vm, "%sstart\n%sstop\n%s", $1, $5, $3); }
   | error '\n'
   ;
 
@@ -54,9 +54,10 @@ endline : '\n' | ';' ;
 main : '|' MAIN '|' '|' instrs      { asprintf (&$$, "%s", $5); }
      ;
 
-funcs : START ID START instrs END funcs { asprintf (&$$, "%s", ""); }
-      | ID START instrs END funcs       { asprintf (&$$, "%s", ""); }
-      | '\n' funcs                      { asprintf (&$$, "%s", ""); }
+funcs : START ID START instrs END funcs { asprintf (&$$, "\n%s:\nnop\n%sreturn\n%s", $2, $4, $6); }
+      | ID START instrs END funcs       { asprintf (&$$, "\n%s:\nnop\n%sreturn\n%s", $1, $3, $5); }
+      | '\n' funcs                      { asprintf (&$$, "%s", $2); }
+      | error endline                   { asprintf (&$$, "%s", ""); }
       |                                 { FUNC = 0; asprintf (&$$, "%s", ""); }
       ;
 
@@ -69,9 +70,13 @@ instr : atr       { asprintf (&$$, "%s", $1); }
       | write     { asprintf (&$$, "%s", $1); }
       | cond      { asprintf (&$$, "%s", $1); }
       | cycle     { asprintf (&$$, "%s", $1); }
+      | fcall     { asprintf (&$$, "%s", $1); }
       | LCOM      { asprintf (&$$, "%s", ""); }
       | MCOM      { asprintf (&$$, "%s", ""); }
       | endline   { asprintf (&$$, "%s", ""); }
+      ;
+
+fcall : ID '(' ')'  { asprintf (&$$, "pusha %s\ncall\nnop\n", $1); }
       ;
 
 cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END          { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
