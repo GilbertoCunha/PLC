@@ -39,7 +39,7 @@ void yyerror (char *s);
 
 %type <inst> main funcs declrs declr decllist singdecl list
 %type <inst> instrs instr atr read write cond cycle fcall
-%type <inst> par factor term expr fstring string
+%type <inst> par factor term expr lexpr lterm fstring string
 
 %start L
 
@@ -141,25 +141,31 @@ list : expr ',' list          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
      | expr                   { asprintf (&$$, "%s", $1); list_size++; }
      ;
 
-expr : expr EQ expr     { asprintf (&$$, "%s%sequal\n", $1, $3); }
-     | expr NEQ expr    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }
-     | expr GE expr     { asprintf (&$$, "%s%ssupeq\n", $1, $3); }
-     | expr LE expr     { asprintf (&$$, "%s%sinfeq\n", $1, $3); }
-     | expr '>' expr    { asprintf (&$$, "%s%ssup\n", $1, $3); }
-     | expr '<' expr    { asprintf (&$$, "%s%sinf\n", $1, $3); }
-     | expr '+' term    { asprintf (&$$, "%s%sadd\n", $1, $3); }
+expr : expr '+' term    { asprintf (&$$, "%s%sadd\n", $1, $3); }
      | expr '-' term    { asprintf (&$$, "%s%ssub\n", $1, $3); }
      | term             { asprintf (&$$, "%s", $1); }
      ;
 
-term : term '*' term    { asprintf (&$$, "%s%smul\n", $1, $3); }
-     | term '/' term    { asprintf (&$$, "%s%sdiv\n", $1, $3); }
-     | term '%' term    { asprintf (&$$, "%s%smod\n", $1, $3); }
-     | term AND term    { asprintf (&$$, "%sdup 1\njz func%d\n%smul\nfunc%d:\n", $1, func_count, $3, func_count); func_count++; }
-     | term OR term     { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
-     | NOT term         { asprintf (&$$, "%snot\n", $2); }
-     | par              { asprintf (&$$, "%s", $1); }
+term : term '*' lexpr    { asprintf (&$$, "%s%smul\n", $1, $3); }
+     | term '/' lexpr    { asprintf (&$$, "%s%sdiv\n", $1, $3); }
+     | term '%' lexpr    { asprintf (&$$, "%s%smod\n", $1, $3); }
+     | lexpr             { asprintf (&$$, "%s", $1); }
      ;
+
+lexpr : lexpr AND lterm   { asprintf (&$$, "%sdup 1\njz func%d\n%smul\nfunc%d:\n", $1, func_count, $3, func_count); func_count++; }
+      | lexpr OR lterm    { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
+      | NOT lterm         { asprintf (&$$, "%snot\n", $2); }
+      | lterm             { asprintf (&$$, "%s", $1); }
+      ;
+
+lterm : lterm EQ par     { asprintf (&$$, "%s%sequal\n", $1, $3); }
+      | lterm NEQ par    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }
+      | lterm GE par     { asprintf (&$$, "%s%ssupeq\n", $1, $3); }
+      | lterm LE par     { asprintf (&$$, "%s%sinfeq\n", $1, $3); }
+      | lterm '>' par    { asprintf (&$$, "%s%ssup\n", $1, $3); }
+      | lterm '<' par    { asprintf (&$$, "%s%sinf\n", $1, $3); }
+      | par             { asprintf (&$$, "%s", $1); }
+      ;
 
 par : '(' expr ')'        { asprintf (&$$, "%s", $2); }
     | factor              { asprintf (&$$, "%s", $1); }

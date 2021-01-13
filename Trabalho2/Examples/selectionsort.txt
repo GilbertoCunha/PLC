@@ -25,9 +25,10 @@ int i, j, aux, vaux, v[10] = [-3, 4, 7, 21, 43, 6, 14, -33, 9, 0]
         aux = i
         for (j=i+1, j<10, j=j+1) ::
             if v[j] < v[aux] ::
-                aux = fswap
+                aux = j
             :;
         :;
+        fswap ()
         write (f"{v[i]} ")
     :;
     write ("\n")
