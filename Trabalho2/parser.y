@@ -71,7 +71,7 @@ instr : atr       { asprintf (&$$, "%s", $1); }
       | cycle     { asprintf (&$$, "%s", $1); }
       | LCOM      { asprintf (&$$, "%s", ""); }
       | MCOM      { asprintf (&$$, "%s", ""); }
-      | '\n'      { asprintf (&$$, "%s", ""); }
+      | endline   { asprintf (&$$, "%s", ""); }
       ;
 
 cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END          { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
@@ -102,10 +102,10 @@ fstring : fstring '{' expr '}'   { asprintf (&$$, "%s%swritei\n", $1, $3); }
         | FSTR                   { asprintf (&$$, "pushs \"%s\"\nwrites\n", $1); }
         ;
 
-atr : ID '=' expr endline         { exprAtr (&$$, $1, $3, &vars); }
-    | ID '=' read endline         { readAtr (&$$, $1, $3, &vars); }
-    | ID '[' expr ']' '=' expr    { arrayAtr (&$$, $1, $3, $6, &vars); }
-    | ID '[' expr ']' '=' read    { readArrayAtr (&$$, $1, $3, $6, &vars); }
+atr : ID '=' expr                 { exprAtr (&$$, $1, $3, &vars); }
+    | ID '=' read                 { readAtr (&$$, $1, $3, &vars); }
+    | ID '[' expr ']' '=' expr    { arrayAtr (&$$, $1, $3, $6, &vars, &func_count); }
+    | ID '[' expr ']' '=' read    { readArrayAtr (&$$, $1, $3, $6, &vars, &func_count); }
     ;
 
 declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
@@ -116,7 +116,7 @@ declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
 declr : INT decllist    { asprintf (&$$, "%s", $2); }     
       | LCOM            { asprintf (&$$, "%s", ""); }
       | MCOM            { asprintf (&$$, "%s", ""); }
-      | '\n'            { asprintf (&$$, "%s", ""); }
+      | endline         { asprintf (&$$, "%s", ""); }
       ;
 
 decllist : singdecl ',' decllist   { asprintf (&$$, "%s%s", $1, $3); }
@@ -160,10 +160,10 @@ par : '(' expr ')'        { asprintf (&$$, "%s", $2); }
 
 factor : NUM                    { asprintf (&$$, "pushi %d\n", $1); }
        | ID                     { factorId (&$$, $1, &vars); }
-       | ID '[' expr ']'        { factorArray (&$$, $1, $3, &vars); }
+       | ID '[' expr ']'        { factorArray (&$$, $1, $3, &vars, &func_count); }
        | '-' NUM                { asprintf (&$$, "pushi %d\n", -$2); }
        | '-' ID                 { negfactorId (&$$, $2, &vars); }
-       | '-' ID '[' expr ']'    { negfactorArray (&$$, $2, $4, &vars); }
+       | '-' ID '[' expr ']'    { negfactorArray (&$$, $2, $4, &vars, &func_count); }
        ;
 
 %%

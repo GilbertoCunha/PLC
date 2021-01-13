@@ -23,11 +23,15 @@ void exprAtr (char **r, char *id, char *expr, AVLTree *vars) {
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
 }
 
-void arrayAtr (char **r, char *id, char *instr, char *expr, AVLTree *vars) {
+void arrayAtr (char **r, char *id, char *instr, char *expr, AVLTree *vars, int *count) {
     int sp, size;
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
-    else if (strcmp (class, "array")==0) asprintf (r, "pushgp\npushi %d\npadd\n%s%sstoren\n", sp, instr, expr);
+    else if (strcmp (class, "array")==0) {
+        char *error_str = outOfRange (id, instr, size, count);
+        asprintf (r, "%spushgp\npushi %d\npadd\n%s%sstoren\n", 
+                  error_str, sp, instr, expr);
+    }
     else if (strcmp (class, "var")==0) intIndex (r, id);
 }
 
@@ -39,11 +43,14 @@ void readAtr (char **r, char *id, char *instr, AVLTree *vars) {
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
 }
 
-void readArrayAtr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars) {
+void readArrayAtr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars, int *count) {
     int sp, size;
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
-    else if (strcmp (class, "array")==0) asprintf (r, "%spushgp\npushi %d\npadd\n%sread\natoi\nstoren\n", instr2, sp, instr1);
+    else if (strcmp (class, "array")==0) {
+        char *error_str = outOfRange (id, instr1, size, count);
+        asprintf (r, "%spushgp\npushi %d\npadd\n%s%sread\natoi\nstoren\n", error_str, sp, instr2, instr1);
+    }
     else if (strcmp (class, "var")==0) intIndex (r, id);
 }
 
@@ -109,11 +116,14 @@ void factorId (char **r, char *id, AVLTree *vars) {
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
 }
 
-void factorArray (char **r, char *id, char *instr, AVLTree *vars) {
+void factorArray (char **r, char *id, char *instr, AVLTree *vars, int *count) {
     int sp, size;
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
-    else if (strcmp (class, "array")==0) asprintf (r, "pushgp\npushi %d\npadd\n%sloadn\n", sp, instr);
+    else if (strcmp (class, "array")==0) {
+        char *error_str = outOfRange (id, instr, size, count);
+        asprintf (r, "%spushgp\npushi %d\npadd\n%sloadn\n", error_str, sp, instr);
+    }
     else if (strcmp (class, "var")==0) intIndex (r, id);
 }
 
@@ -125,11 +135,14 @@ void negfactorId (char **r, char *id, AVLTree *vars) {
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
 }
 
-void negfactorArray (char **r, char *id, char *instr, AVLTree *vars) {
+void negfactorArray (char **r, char *id, char *instr, AVLTree *vars, int *count) {
     int sp, size;
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id);
-    else if (strcmp (class, "array")==0) asprintf (r, "pushgp\npushi %d\npadd\n%sloadn\npushi -1\nmul\n", sp, instr);
+    else if (strcmp (class, "array")==0) {
+        char *error_str = outOfRange (id, instr, size, count);
+        asprintf (r, "%spushgp\npushi %d\npadd\n%sloadn\npushi -1\nmul\n", error_str, sp, instr);
+    }
     else if (strcmp (class, "var")==0) intIndex (r, id);
 }
 

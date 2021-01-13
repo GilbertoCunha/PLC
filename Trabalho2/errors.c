@@ -11,10 +11,17 @@ void notDeclared (char **r, char *id) {
     myyyerror(r, error_str);
 }
 
-void outOfRange (char **r, char *id, char size, char index) {
-    char *error_str;
-    asprintf (&error_str, "Array \"%s\" of size %d has no index %d.", id, size, index);
-    myyyerror (r, error_str);
+char *outOfRange (char *id, char *instr, int size, int *count) {
+    char *inferior, *greater, *error_inf, *error_gr, *error_str;
+    asprintf (&error_gr, "| Error: Index of array \'%s\' too high for its size.", id);
+    asprintf (&error_inf, "| Error: Index of array \'%s\' smaller than zero.", id);
+    asprintf (&greater, "%spushi %d\nsupeq\njz func%d\nerr \"%s\"\nstop\nfunc%d:\n", 
+                instr, size, *count, error_gr, *count);
+    asprintf (&inferior, "%spushi 0\ninf\njz func%d\nerr \"%s\"\nstop\nfunc%d:\n", 
+                instr, *count + 1, error_inf, *count + 1);
+    asprintf (&error_str, "%s%s", inferior, greater);
+    *count = *count + 2;
+    return error_str;
 }
 
 void assignIntArray (char **r, char *id) {

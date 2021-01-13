@@ -18,14 +18,14 @@ int i, j, aux, vaux, v[10] = [-3, 4, 7, 21, 43, 6, 14, -33, 9, 0]
 :;
 
 || main ||
+
     write ("Array:        ")
     for (i, vaux) -> v ::
         write (f"{vaux} ")
     :;
+
     write ("\nSorted array: ")
     for (i, 0, 10) ::
-
-
         aux = i
         for (j, i+1, 10) ::
             if v[j] < v[aux] ::
@@ -38,4 +38,5 @@ int i, j, aux, vaux, v[10] = [-3, 4, 7, 21, 43, 6, 14, -33, 9, 0]
         write (f"{v[i]} ")
     :;
     write ("\n")
+    
 :;
