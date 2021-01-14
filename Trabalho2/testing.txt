@@ -1,17 +1,7 @@
-"""int i, v, a[4] = [10, 20, 30, 40, 50]
-<<
-for (i, v) -> a ::
-    write (f"index: {i} | value: {v}\n")
-:;
->>"""
+int i, j, a, l, k, var[20]
 
-int i, v, a[4] = [27, 34, 21, 17, 50]
-int a[2] = [1, 2]
-<<
-for (i, 3, -1, a) ::
-    v = v + a[i]
-    bruh = zepedro
+:: void fswap ::
 :;
-v = i[2]
-write(f"O valor do perímetro é {v}.\n");
->>
+
+|| main ||
+:;

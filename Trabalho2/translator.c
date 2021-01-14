@@ -137,8 +137,8 @@ void factorArray (char **r, char *id, char *instr, AVLTree *vars, int *count, in
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "array");
     else if (strcmp (class, "array")==0) {
-        // char *error_str = outOfRange (id, instr, size, count, line);
-        asprintf (r, "pushgp\npushi %d\npadd\n%sloadn\n", sp, instr);
+        char *error_str = outOfRange (id, instr, size, count, line);
+        asprintf (r, "%spushgp\npushi %d\npadd\n%sloadn\n", error_str, sp, instr);
     }
     else if (strcmp (class, "var")==0) intIndex (r, id);
     else if (strcmp (class, "func")==0) assignFunc (r, id);

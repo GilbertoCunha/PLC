@@ -13,14 +13,10 @@ OPERATION [\+\(\)\*\-\/\%]
 %option yylineno
 
 %%
-\#[^\n]*\n                                  { return LCOM; }
-["]{3}(["]{0,2}([^\\"]|\\(.|\n)))*["]{3}    { return MCOM; } 
 main                                        { return MAIN; }
 int                                         { return INT; }
 void                                        { return VOID; }
 for                                         { return FOR; } 
-\:\:                                        { return START; } 
-\:\;                                        { return END; } 
 if                                          { return IF; } 
 else                                        { return ELSE; } 
 or                                          { return OR; } 
@@ -29,12 +25,16 @@ not                                         { return NOT; }
 read                                        { return READ; } 
 write                                       { return WRITE; } 
 {DIGIT}+                                    { yylval.num = atoi(yytext); return NUM; }  
-{LETTER}+_*{LETTER}*{DIGIT}*                { yylval.id = strdup(yytext); return ID; } 
-[\ \t\r]                                    { ; }
+{LETTER}+{DIGIT}*_*{LETTER}*{DIGIT}*        { yylval.id = strdup(yytext); return ID; } 
+\#[^\n]*\n                                  { return LCOM; }
+["]{3}(["]{0,2}([^\\"]|\\(.|\n)))*["]{3}    { return MCOM; } 
+\:\:                                        { return START; } 
+\:\;                                        { return END; } 
 \=\=                                        { return EQ; }
 \!\=                                        { return NEQ; }
 \<\=                                        { return LE; }
 \>\=                                        { return GE; }
+[\ \t\r]                                    { ; }
 \"[^\"]*\"                                  { yylval.id = strdup(yytext); return STR; }
 f\"                                         { BEGIN FSTRING; return FSS; }
 (.|\n)                                      { return yytext[0]; }                                          

@@ -56,9 +56,7 @@ main : '|' MAIN '|' '|' instrs      { asprintf (&$$, "%s", $5); }
      ;
 
 funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, &func_count, "void"); }
-      | START INT ID START instrs END funcs     { declrFunc (&$$, $3, $5, $7, &vars, &func_count, "int"); }
       | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, &func_count, "void"); }
-      | INT ID START instrs END funcs           { declrFunc (&$$, $2, $4, $6, &vars, &func_count, "int"); }
       | '\n' funcs                              { asprintf (&$$, "%s", $2); }
       | error endline                           { asprintf (&$$, "%s", ""); }
       |                                         { asprintf (&$$, "%s", ""); }
@@ -79,8 +77,7 @@ instr : atr       { asprintf (&$$, "%s", $1); }
       | endline   { asprintf (&$$, "%s", ""); }
       ;
 
-fcall : ID '=' ID '(' ')'     { funcAtr (&$$, $1, $3, &vars); }
-      | ID '(' ')'            { funcCall (&$$, $1, &vars); }
+fcall : ID '(' ')'            { funcCall (&$$, $1, &vars); }
       ;
 
 cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END                  { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
@@ -122,10 +119,10 @@ declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
        |                 { asprintf (&$$, "%s", ""); }
        ;
 
-declr : INT decllist    { asprintf (&$$, "%s", $2); }     
-      | LCOM            { asprintf (&$$, "%s", ""); }
-      | MCOM            { asprintf (&$$, "%s", ""); }
-      | endline         { asprintf (&$$, "%s", ""); }
+declr : INT decllist endline  { asprintf (&$$, "%s", $2); }     
+      | LCOM                  { asprintf (&$$, "%s", ""); }
+      | MCOM                  { asprintf (&$$, "%s", ""); }
+      | '\n'                  { asprintf (&$$, "%s", ""); }
       ;
 
 decllist : singdecl ',' decllist   { asprintf (&$$, "%s%s", $1, $3); }
