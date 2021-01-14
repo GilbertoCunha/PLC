@@ -20,16 +20,16 @@ void declrArray (char **r, char *id, char *index, char *count, AVLTree *vars);
 void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count);
 void declrRead (char **r, char *id, char *instr, AVLTree *vars, int *count);
 void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *count, int *size);
-void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count);
+void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count, char *ftype);
 void factorId (char **r, char *id, AVLTree *vars);
 void factorArray (char **r, char *id, char *instr, AVLTree *vars, int *count, int line);
 void negfactorId (char **r, char *id, AVLTree *vars);
 void negfactorArray (char **r, char *id, char *instr, AVLTree *vars, int *count, int line);
 void forStartEnd (char **r, char *id, char *expr1, char *expr2, char *instr, AVLTree *vars, int *count);
 void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *instr, AVLTree *vars, int *count);
-void forArrayV (char **r, char *v, char *id, char *instr, AVLTree *vars, int *count);
 void forArrayIV (char **r, char *index, char *v, char *id, char *instr, AVLTree *vars, int *count);
 void forCond (char **r, char *id1, char *id2, char *expr1, char *expr2, char *expr3, char *instrs, AVLTree *vars, int *count);
 void funcCall (char **r, char *id, AVLTree *vars);
+void funcAtr (char **r, char *id1, char *id2, AVLTree *vars);
 
 #endif

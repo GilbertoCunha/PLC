@@ -17,6 +17,7 @@ OPERATION [\+\(\)\*\-\/\%]
 ["]{3}(["]{0,2}([^\\"]|\\(.|\n)))*["]{3}    { return MCOM; } 
 main                                        { return MAIN; }
 int                                         { return INT; }
+void                                        { return VOID; }
 for                                         { return FOR; } 
 \:\:                                        { return START; } 
 \:\;                                        { return END; } 

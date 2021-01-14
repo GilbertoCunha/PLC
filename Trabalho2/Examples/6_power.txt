@@ -1,0 +1,16 @@
+int i, e, b, p
+
+:: void potencia ::
+    p = 1
+    for (i=e, i>0, i=i-1) ::
+        p = p * b
+    :;
+:;
+
+|| main ||
+    write ("Cálculo da potência. Escolha a sua base e expoente.\n")
+    b = read ("Base: ")
+    e = read ("Expoente: ")
+    potencia ()
+    write (f"{b}^{e}={p}\n")
+:;

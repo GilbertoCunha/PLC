@@ -1,15 +1,15 @@
 int N = read("Quer descobrir o menor elemento de quantos números? ")
 int i, r, var
-<<
-r = read("1º número: ")
 
-for (i, 0, N-1) ::
-    var = read(f"{i+2}º número: ")
+|| main ||
+    r = read("1º número: ")
 
-    if var < r ::
-        r = var
+    for (i, 0, N-1) ::
+        var = read(f"{i+2}º número: ")
+
+        if var < r ::
+            r = var
+        :;
     :;
+    write(f"O menor dos números é {r}\n")
 :;
-
-write(f"O menor dos números é {r}\n")
->>

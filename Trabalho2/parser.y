@@ -21,7 +21,7 @@ void yyerror (char *s);
   char *inst;
 }
 
-%token INT
+%token INT VOID
 %token <id> ID STR FSTR
 %token <num> NUM
 
@@ -39,7 +39,7 @@ void yyerror (char *s);
 
 %type <inst> main funcs declrs declr decllist singdecl list
 %type <inst> instrs instr atr read write cond cycle fcall
-%type <inst> par factor term expr lexpr lterm fstring string
+%type <inst> par factor term expr lexpr arithm fstring string
 
 %start L
 
@@ -55,11 +55,13 @@ endline : '\n' | ';' ;
 main : '|' MAIN '|' '|' instrs      { asprintf (&$$, "%s", $5); }
      ;
 
-funcs : START ID START instrs END funcs { declrFunc (&$$, $2, $4, $6, &vars, &func_count); }
-      | ID START instrs END funcs       { declrFunc (&$$, $1, $3, $5, &vars, &func_count); }
-      | '\n' funcs                      { asprintf (&$$, "%s", $2); }
-      | error endline                   { asprintf (&$$, "%s", ""); }
-      |                                 { FUNC = 0; asprintf (&$$, "%s", ""); }
+funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, &func_count, "void"); }
+      | START INT ID START instrs END funcs     { declrFunc (&$$, $3, $5, $7, &vars, &func_count, "int"); }
+      | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, &func_count, "void"); }
+      | INT ID START instrs END funcs           { declrFunc (&$$, $2, $4, $6, &vars, &func_count, "int"); }
+      | '\n' funcs                              { asprintf (&$$, "%s", $2); }
+      | error endline                           { asprintf (&$$, "%s", ""); }
+      |                                         { asprintf (&$$, "%s", ""); }
       ;
 
 instrs : instrs instr   { asprintf (&$$, "%s%s", $1, $2); }
@@ -77,12 +79,12 @@ instr : atr       { asprintf (&$$, "%s", $1); }
       | endline   { asprintf (&$$, "%s", ""); }
       ;
 
-fcall : ID '(' ')'  { funcCall (&$$, $1, &vars); }
+fcall : ID '=' ID '(' ')'     { funcAtr (&$$, $1, $3, &vars); }
+      | ID '(' ')'            { funcCall (&$$, $1, &vars); }
       ;
 
 cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END                  { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
       | FOR '(' ID ',' expr ',' expr ',' expr ')' START instrs END         { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
-      | FOR ID '-' '>' ID START instrs END                                 { forArrayV (&$$, $2, $5, $7, &vars, &func_count); }
       | FOR '(' ID ',' ID ')' '-' '>' ID START instrs END                  { forArrayIV (&$$, $3, $5, $9, $11, &vars, &func_count); }    
       | FOR '(' ID '=' expr ',' expr ',' ID '=' expr ')' START instrs END  { forCond (&$$, $3, $9, $5, $7, $11, $14, &vars, &func_count); }
       ;
@@ -141,31 +143,31 @@ list : expr ',' list          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
      | expr                   { asprintf (&$$, "%s", $1); list_size++; }
      ;
 
-expr : expr '+' term    { asprintf (&$$, "%s%sadd\n", $1, $3); }
-     | expr '-' term    { asprintf (&$$, "%s%ssub\n", $1, $3); }
-     | term             { asprintf (&$$, "%s", $1); }
-     ;
-
-term : term '*' lexpr    { asprintf (&$$, "%s%smul\n", $1, $3); }
-     | term '/' lexpr    { asprintf (&$$, "%s%sdiv\n", $1, $3); }
-     | term '%' lexpr    { asprintf (&$$, "%s%smod\n", $1, $3); }
+expr : expr AND lexpr    { asprintf (&$$, "%sdup 1\njz func%d\n%smul\nfunc%d:\n", $1, func_count, $3, func_count); func_count++; }
+     | expr OR lexpr     { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
+     | NOT lexpr         { asprintf (&$$, "%snot\n", $2); }
      | lexpr             { asprintf (&$$, "%s", $1); }
      ;
 
-lexpr : lexpr AND lterm   { asprintf (&$$, "%sdup 1\njz func%d\n%smul\nfunc%d:\n", $1, func_count, $3, func_count); func_count++; }
-      | lexpr OR lterm    { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
-      | NOT lterm         { asprintf (&$$, "%snot\n", $2); }
-      | lterm             { asprintf (&$$, "%s", $1); }
+lexpr : lexpr EQ arithm     { asprintf (&$$, "%s%sequal\n", $1, $3); }
+      | lexpr NEQ arithm    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }
+      | lexpr GE arithm     { asprintf (&$$, "%s%ssupeq\n", $1, $3); }
+      | lexpr LE arithm     { asprintf (&$$, "%s%sinfeq\n", $1, $3); }
+      | lexpr '>' arithm    { asprintf (&$$, "%s%ssup\n", $1, $3); }
+      | lexpr '<' arithm    { asprintf (&$$, "%s%sinf\n", $1, $3); }
+      | arithm              { asprintf (&$$, "%s", $1); }
       ;
 
-lterm : lterm EQ par     { asprintf (&$$, "%s%sequal\n", $1, $3); }
-      | lterm NEQ par    { asprintf (&$$, "%s%sequal\nnot\n", $1, $3); }
-      | lterm GE par     { asprintf (&$$, "%s%ssupeq\n", $1, $3); }
-      | lterm LE par     { asprintf (&$$, "%s%sinfeq\n", $1, $3); }
-      | lterm '>' par    { asprintf (&$$, "%s%ssup\n", $1, $3); }
-      | lterm '<' par    { asprintf (&$$, "%s%sinf\n", $1, $3); }
-      | par             { asprintf (&$$, "%s", $1); }
-      ;
+arithm : arithm '+' term    { asprintf (&$$, "%s%sadd\n", $1, $3); }
+       | arithm '-' term    { asprintf (&$$, "%s%ssub\n", $1, $3); }
+       | term               { asprintf (&$$, "%s", $1); }
+       ;
+
+term : term '*' par    { asprintf (&$$, "%s%smul\n", $1, $3); }
+     | term '/' par    { asprintf (&$$, "%s%sdiv\n", $1, $3); }
+     | term '%' par    { asprintf (&$$, "%s%smod\n", $1, $3); }
+     | par             { asprintf (&$$, "%s", $1); }
+     ;
 
 par : '(' expr ')'        { asprintf (&$$, "%s", $2); }
     | factor              { asprintf (&$$, "%s", $1); }

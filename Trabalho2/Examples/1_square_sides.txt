@@ -2,21 +2,21 @@ int N[4]
 int i
 int r
 
-<<
-for (i, 0, 4) ::
-    # Adicionar uso de variáveis como índices de arrays
-    N[i] = read(f"{i+1}º lado do quadrado: ")
+|| main ||
+    for (i, 0, 4) ::
+        # Adicionar uso de variáveis como índices de arrays
+        N[i] = read(f"{i+1}º lado do quadrado: ")
 
-    if i>0 ::
-        if N[i] != N[i-1] ::
-            r = 1
+        if i>0 ::
+            if N[i] != N[i-1] ::
+                r = 1
+            :;
         :;
     :;
-:;
 
-if r != 1 ::
-    write("Podem ser os lados de um quadrado\n")
-:: else ::
-    write("Não podem ser os lados de um quadrado\n")
+    if r != 1 ::
+        write("São lados de um quadrado\n")
+    :: else ::
+        write("Não são lados de um quadrado\n")
+    :;
 :;
->>

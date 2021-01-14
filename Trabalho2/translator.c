@@ -112,12 +112,13 @@ void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *co
     *size = 0;
 }
 
-void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count) {
+void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count, char *ftype) {
     char *class, *type; int size, sp;
     if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
     else {
-        insertAVL (vars, id, "func", "void", 1, *count);
-        asprintf (r, "\n%s:\nnop\n%sreturn\n%s", id, instrs1, instrs2);
+        insertAVL (vars, id, "func", ftype, 1, *count);
+        if (strcmp (ftype, "void")==0) asprintf (r, "\n%s:\nnop\n%sreturn\n%s", id, instrs1, instrs2);
+        else if (strcmp (ftype, "int")==0) asprintf (r, "\n%s:\nnop\n%sstorel -1\nreturn\n%s", id, instrs1, instrs2);
         *count = *count + 1;
     }
 }
@@ -195,10 +196,6 @@ void forStep (char **r, char *id, char *expr1, char *expr2, char *expr3, char *i
     else if (strcmp (class, "func")==0) myyyerror (r, "Can't iterate function, use integer instead.");
 }
 
-void forArrayV (char **r, char *v, char *id, char *instr, AVLTree *vars, int *count) {
-
-}
-
 void forArrayIV (char **r, char *index, char *v, char *id, char *instr, AVLTree *vars, int *count) {
     int spi, spv, spa, size;
     char *class, *type, *ind_id;
@@ -239,5 +236,17 @@ void funcCall (char **r, char *id, AVLTree *vars) {
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "function");
     else if (strcmp (class, "func")!=0) myyyerror (r, "Variable not callable.");
+    else if (strcmp (type, "void")!=0) myyyerror (r, "Non-void function not assigning its return.");
     else asprintf (r, "pusha %s\ncall\nnop\n", id);
+}
+
+void funcAtr (char **r, char *id1, char *id2, AVLTree *vars) {
+    int sp, size;
+    char *class, *type1, *type2;
+    if (!searchAVL (*vars, id2, &class, &type1, &size, &sp)) notDeclared (r, id2, "function");
+    else if (strcmp (class, "func")!=0) myyyerror (r, "Variable not callable.");
+    else if (strcmp (type1, "void")==0) myyyerror (r, "Can't atribute value of void function");
+    else if (!searchAVL (*vars, id1, &class, &type2, &size, &sp)) notDeclared (r, id1, "variable");
+    else if (strcmp (type1, type2)!=0) myyyerror (r, "Function and variable types don't match.");
+    else asprintf (r, "pushi 0\npusha %s\ncall\nnop\nstoreg %d\n", id2, sp);
 }

@@ -1,13 +1,12 @@
 int i, count
 int seq[5] = [1, 10, 7, 6, 3]
 
-<<
-for (i, 0, 5) ::
-    if seq[i]%2 == 1 ::
-        write(f"O {i}º elemento do array (com valor {seq[i]}) é ímpar\n")
-        count = count + 1
+|| main ||
+    for (i, 0, 5) ::
+        if seq[i]%2 == 1 ::
+            write(f"O {i}º elemento do array (com valor {seq[i]}) é ímpar\n")
+            count = count + 1
+        :;
     :;
+    write(f"O número de elementos ímpares é {count}\n")
 :;
-
-write(f"O número de elementos ímpares é {count}\n")
->>
