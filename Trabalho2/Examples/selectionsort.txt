@@ -10,12 +10,12 @@ int i, j, aux, vaux, v[10] = [-3, 4, 7, 21, 43, 6, 14, -33, 9, 0]
 
 :: void fswap ::
     vaux = v[i]
-    v[i] = v[aux-100]
+    v[i] = v[aux]
     v[aux] = vaux
 :;
 
 || main ||
-    write ("Array:        ")
+    write (f"Array:        ")
     for (i, vaux) -> v ::
         write (f"{vaux} ")
     :;

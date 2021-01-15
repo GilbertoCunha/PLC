@@ -4,7 +4,7 @@
 int DEBUG, VERBOSE;
 int ERROR = 0, FUNC = 0;
 int sp_count = 0;
-int func_count = 0;
+int fcount = 0;
 int list_size = 0;
 AVLTree vars = NULL;
 FILE *vm;
@@ -32,7 +32,7 @@ void yyerror (char *s);
 %token START END
 
 %token MAIN READ WRITE
-%token LCOM MCOM FSS
+%token FSS
 
 %left '<' '>' '+' '-' '*' '/' '%' 
 %left AND OR NOT EQ NEQ GE LE
@@ -55,8 +55,8 @@ endline : '\n' | ';' ;
 main : '|' MAIN '|' '|' instrs      { asprintf (&$$, "%s", $5); }
      ;
 
-funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, &func_count, "void"); }
-      | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, &func_count, "void"); }
+funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, &fcount, "void"); }
+      | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, &fcount, "void"); }
       | '\n' funcs                              { asprintf (&$$, "%s", $2); }
       | error endline                           { asprintf (&$$, "%s", ""); }
       |                                         { asprintf (&$$, "%s", ""); }
@@ -72,23 +72,21 @@ instr : atr       { asprintf (&$$, "%s", $1); }
       | cond      { asprintf (&$$, "%s", $1); }
       | cycle     { asprintf (&$$, "%s", $1); }
       | fcall     { asprintf (&$$, "%s", $1); }
-      | LCOM      { asprintf (&$$, "%s", ""); }
-      | MCOM      { asprintf (&$$, "%s", ""); }
       | endline   { asprintf (&$$, "%s", ""); }
       ;
 
 fcall : ID '(' ')'            { funcCall (&$$, $1, &vars); }
       ;
 
-cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END                  { forStartEnd (&$$, $3, $5, $7, $10, &vars, &func_count); }
-      | FOR '(' ID ',' expr ',' expr ',' expr ')' START instrs END         { forStep (&$$, $3, $5, $7, $9, $12, &vars, &func_count); }
-      | FOR '(' ID ',' ID ')' '-' '>' ID START instrs END                  { forArrayIV (&$$, $3, $5, $9, $11, &vars, &func_count); }    
-      | FOR '(' ID '=' expr ',' expr ',' ID '=' expr ')' START instrs END  { forCond (&$$, $3, $9, $5, $7, $11, $14, &vars, &func_count); }
+cycle : FOR '(' ID ',' expr ',' expr ')' START instrs END                  { forStartEnd (&$$, $3, $5, $7, $10, &vars, &fcount); }
+      | FOR '(' ID ',' expr ',' expr ',' expr ')' START instrs END         { forStep (&$$, $3, $5, $7, $9, $12, &vars, &fcount); }
+      | FOR '(' ID ',' ID ')' '-' '>' ID START instrs END                  { forArrayIV (&$$, $3, $5, $9, $11, &vars, &fcount); }    
+      | FOR '(' ID '=' expr ',' expr ',' ID '=' expr ')' START instrs END  { forCond (&$$, $3, $9, $5, $7, $11, $14, &vars, &fcount); }
       ;
 
-cond : IF expr START instrs END                          { ifInstr (&$$, $2, $4, &func_count); }
-     | IF expr START instrs START ELSE START instrs END  { ifElse (&$$, $2, $4, $8, &func_count); }
-     | IF expr START instrs START ELSE cond              { ifElseif (&$$, $2, $4, $7, &func_count); }
+cond : IF expr START instrs END                          { ifInstr (&$$, $2, $4, &fcount); }
+     | IF expr START instrs START ELSE START instrs END  { ifElse (&$$, $2, $4, $8, &fcount); }
+     | IF expr START instrs START ELSE cond              { ifElseif (&$$, $2, $4, $7, &fcount); }
      ;
 
 write : WRITE '(' string ')' endline   { asprintf (&$$, "%s", $3); }
@@ -110,8 +108,8 @@ fstring : fstring '{' expr '}'   { asprintf (&$$, "%s%swritei\n", $1, $3); }
 
 atr : ID '=' expr                 { exprAtr (&$$, $1, $3, &vars); }
     | ID '=' read                 { readAtr (&$$, $1, $3, &vars); }
-    | ID '[' expr ']' '=' expr    { arrayAtr (&$$, $1, $3, $6, &vars, &func_count, @3.first_line); }
-    | ID '[' expr ']' '=' read    { readArrayAtr (&$$, $1, $3, $6, &vars, &func_count, @3.first_line); }
+    | ID '[' expr ']' '=' expr    { arrayAtr (&$$, $1, $3, $6, &vars, &fcount, @3.first_line); }
+    | ID '[' expr ']' '=' read    { readArrayAtr (&$$, $1, $3, $6, &vars, &fcount, @3.first_line); }
     ;
 
 declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
@@ -119,9 +117,7 @@ declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
        |                 { asprintf (&$$, "%s", ""); }
        ;
 
-declr : INT decllist endline  { asprintf (&$$, "%s", $2); }     
-      | LCOM                  { asprintf (&$$, "%s", ""); }
-      | MCOM                  { asprintf (&$$, "%s", ""); }
+declr : INT decllist endline  { asprintf (&$$, "%s", $2); }
       | '\n'                  { asprintf (&$$, "%s", ""); }
       ;
 
@@ -140,8 +136,8 @@ list : expr ',' list          { asprintf (&$$, "%s%s", $1, $3); list_size++; }
      | expr                   { asprintf (&$$, "%s", $1); list_size++; }
      ;
 
-expr : expr AND lexpr    { asprintf (&$$, "%sdup 1\njz func%d\n%smul\nfunc%d:\n", $1, func_count, $3, func_count); func_count++; }
-     | expr OR lexpr     { asprintf (&$$, "%snot\n%snot\nmul\nnot\n", $1, $3); }
+expr : expr AND lexpr    { asprintf (&$$, "%sdup 1\njz func%d\n%smul\nfunc%d:\n", $1, fcount, $3, fcount); fcount++; }
+     | expr OR lexpr     { asprintf (&$$, "%snot\ndup 1\njz func%d\n%snot\nmul\nnot\nfunc%d:\n", $1, fcount, $3, fcount); fcount++; }
      | NOT lexpr         { asprintf (&$$, "%snot\n", $2); }
      | lexpr             { asprintf (&$$, "%s", $1); }
      ;
@@ -172,10 +168,10 @@ par : '(' expr ')'        { asprintf (&$$, "%s", $2); }
 
 factor : NUM                    { asprintf (&$$, "pushi %d\n", $1); }
        | ID                     { factorId (&$$, $1, &vars); }
-       | ID '[' expr ']'        { factorArray (&$$, $1, $3, &vars, &func_count, @3.last_line); }
+       | ID '[' expr ']'        { factorArray (&$$, $1, $3, &vars, &fcount, @3.last_line); }
        | '-' NUM                { asprintf (&$$, "pushi %d\n", -$2); }
        | '-' ID                 { negfactorId (&$$, $2, &vars); }
-       | '-' ID '[' expr ']'    { negfactorArray (&$$, $2, $4, &vars, &func_count, @3.first_line); }
+       | '-' ID '[' expr ']'    { negfactorArray (&$$, $2, $4, &vars, &fcount, @3.first_line); }
        ;
 
 %%

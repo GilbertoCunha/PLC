@@ -2,7 +2,7 @@ int i, j, vaux, v[10] = [-3, 4, 7, 21, 43, 6, 14, -33, 9, 0]
 
 || main ||
     # Ordenar o array
-    for (j=5, j>0 and v[j-1]>-10, j=j-1) ::
+    for (j=5, j>0 and v[j-1]>10, j=j-1) ::
         write (f"j: {j} | v[j]: {v[j]}\n")
     :;
     write ("\n")

@@ -6,7 +6,6 @@
 
 DIGIT [0-9]
 LETTER [a-zA-Z]
-OPERATION [\+\(\)\*\-\/\%]
 
 %x FSTRING CBRACES
 %option noyywrap
@@ -26,17 +25,17 @@ read                                        { return READ; }
 write                                       { return WRITE; } 
 {DIGIT}+                                    { yylval.num = atoi(yytext); return NUM; }  
 {LETTER}+{DIGIT}*_*{LETTER}*{DIGIT}*        { yylval.id = strdup(yytext); return ID; } 
-\#[^\n]*\n                                  { return LCOM; }
-["]{3}(["]{0,2}([^\\"]|\\(.|\n)))*["]{3}    { return MCOM; } 
+\#[^\n]*\n                                  { ; }
+["]{3}(["]{0,2}([^\\"]|\\(.|\n)))*["]{3}    { ; } 
 \:\:                                        { return START; } 
 \:\;                                        { return END; } 
 \=\=                                        { return EQ; }
 \!\=                                        { return NEQ; }
 \<\=                                        { return LE; }
 \>\=                                        { return GE; }
-[\ \t\r]                                    { ; }
 \"[^\"]*\"                                  { yylval.id = strdup(yytext); return STR; }
 f\"                                         { BEGIN FSTRING; return FSS; }
+[\ \t\r]                                    { ; }
 (.|\n)                                      { return yytext[0]; }                                          
 
 <FSTRING>\"                                         { BEGIN INITIAL; return yytext[0]; }
@@ -44,9 +43,15 @@ f\"                                         { BEGIN FSTRING; return FSS; }
 <FSTRING>[^\{\"]*                                   { yylval.id = strdup(yytext); return FSTR; }
 
 <CBRACES>\}                                         { BEGIN FSTRING; return yytext[0]; }
-<CBRACES>{OPERATION}                                { return yytext[0]; }
+<CBRACES>or                                         { return OR; } 
+<CBRACES>and                                        { return AND; } 
+<CBRACES>not                                        { return NOT; }
 <CBRACES>{DIGIT}+                                   { yylval.num = atoi(yytext); return NUM; }
 <CBRACES>{LETTER}+_*{LETTER}*{DIGIT}*               { yylval.id = strdup(yytext); return ID; }
+<CBRACES>\=\=                                       { return EQ; }
+<CBRACES>\!\=                                       { return NEQ; }
+<CBRACES>\<\=                                       { return LE; }
+<CBRACES>\>\=                                       { return GE; }
 <CBRACES>[ ]                                        { ; }
 <CBRACES>(.|\n)                                     { return yytext[0]; }
 %%
