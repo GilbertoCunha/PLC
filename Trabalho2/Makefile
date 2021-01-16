@@ -23,3 +23,6 @@ clean:
 	@rm *.dot
 	@rm *.png
 	@rm *.vm
+
+man: 
+	@more "Man.txt"

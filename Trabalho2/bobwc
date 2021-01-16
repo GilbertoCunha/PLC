@@ -1,0 +1,20 @@
+#!/usr/bin/bash
+
+check() {
+	declare -n ref=$2
+	if [[ ($1 =~ debug=.+) ]] || [[ ($1 =~ verbose=.+) ]] || [[ ($1 =~ file=.+) ]] || [[ -z $1 ]]
+	then ref=$1
+	else
+		echo "Argument $3 \"$1\" unrecognized, use \"debug\", \"verbose\" or \"file\" instead."
+	fi
+}
+
+fst=""
+snd=""
+trd=""
+
+[[ -n $1 ]] && check $1 fst "1"
+[[ -n $2 ]] && check $2 snd "2"
+[[ -n $3 ]] && check $3 trd "3"
+
+make compile $fst $snd $trd

@@ -1,0 +1,20 @@
+# Declarações
+int a, b = 233 / 5, c = 20 + 4, d = read("Valor para d: ")
+
+# Definir funções auxiliares
+:: void faux1 ::
+    ...
+:;
+
+:: void faux2 ::
+    ...
+:;
+
+# Definir a main
+|| main ||
+    ...
+    # Chamada à função faux1, o seu código vai ser executado
+    faux1 ()
+    ...
+    faux2 ()
+:;
