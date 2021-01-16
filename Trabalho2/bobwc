@@ -1,11 +1,11 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 check() {
 	declare -n ref=$2
 	if [[ ($1 =~ debug=.+) ]] || [[ ($1 =~ verbose=.+) ]] || [[ ($1 =~ file=.+) ]] || [[ -z $1 ]]
 	then ref=$1
 	else
-		echo "Argument $3 \"$1\" unrecognized, use \"debug\", \"verbose\" or \"file\" instead."
+		echo Argument $3 -\> \"$1\" unrecognized.$'\n'The following arguments can be used:$'\n'-\> debug=yes$'\n'-\> verbose=yes$'\n'-\> file=FILENAME
 	fi
 }
 
