@@ -59,17 +59,17 @@ funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &v
       |                                         { asprintf (&$$, "%s", ""); }
       ;
 
-instrs : instrs instr endline   { asprintf (&$$, "%s%s", $1, $2); }
-       | instrs '\n'            { asprintf (&$$, "%s", ""); }
-       | error endline          { asprintf (&$$, "%s", ""); }
-       |                        { asprintf (&$$, "%s", ""); }
+instrs : instrs instr   { asprintf (&$$, "%s%s", $1, $2); }
+       | error endline  { asprintf (&$$, "%s",""); }
+       |                { asprintf (&$$, "%s", ""); }
        ;
 
-instr : atr       { asprintf (&$$, "%s", $1); }
-      | write     { asprintf (&$$, "%s", $1); }
-      | cond      { asprintf (&$$, "%s", $1); }
-      | cycle     { asprintf (&$$, "%s", $1); }
-      | fcall     { asprintf (&$$, "%s", $1); }
+instr : atr endline      { asprintf (&$$, "%s", $1); }
+      | write endline    { asprintf (&$$, "%s", $1); }
+      | cond endline     { asprintf (&$$, "%s", $1); }
+      | cycle endline    { asprintf (&$$, "%s", $1); }
+      | fcall endline    { asprintf (&$$, "%s", $1); }
+      | '\n'             { asprintf (&$$, "%s", ""); }
       ;
 
 fcall : ID '(' ')'            { funcCall (&$$, $1, &vars); }
@@ -110,12 +110,12 @@ atr : ID '=' expr                 { exprAtr (&$$, $1, $3, &vars); }
     ;
 
 declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
-       | declrs '\n'     { asprintf (&$$, "%s", ""); }
        | error endline   { asprintf (&$$, "%s", ""); }
        |                 { asprintf (&$$, "%s", ""); }
        ;
 
 declr : INT decllist endline       { asprintf (&$$, "%s", $2); }
+      | '\n'                       { asprintf (&$$, "%s", ""); }
       ;
 
 decllist : singdecl ',' decllist   { asprintf (&$$, "%s%s", $1, $3); }
