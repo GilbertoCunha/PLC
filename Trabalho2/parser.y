@@ -52,8 +52,8 @@ endline : '\n' | ';' ;
 main : '|' MAIN '|' '|' instrs      { asprintf (&$$, "%s", $5); }
      ;
 
-funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, &fcount, "void"); }
-      | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, &fcount, "void"); }
+funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, "void"); }
+      | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, "void"); }
       | '\n' funcs                              { asprintf (&$$, "%s", $2); }
       | error endline                           { asprintf (&$$, "%s", ""); }
       |                                         { asprintf (&$$, "%s", ""); }

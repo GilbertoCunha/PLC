@@ -25,7 +25,7 @@ read                                        { return READ; }
 write                                       { return WRITE; } 
 {DIGIT}+                                    { yylval.num = atoi(yytext); return NUM; }  
 {LETTER}+{DIGIT}*_*{LETTER}*{DIGIT}*        { yylval.id = strdup(yytext); return ID; } 
-\#[^\n]*\n                                  { ; }
+\#[^\n]*\#                                  { ; }
 ["]{3}(["]{0,2}([^\\"]|\\(.|\n)))*["]{3}    { ; } 
 \:\:                                        { return START; } 
 \:\;                                        { return END; } 

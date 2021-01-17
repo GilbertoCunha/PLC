@@ -4,7 +4,7 @@ int r
 
 || main ||
     for (i, 0, 4) ::
-        # Adicionar uso de variáveis como índices de arrays
+        # Adicionar uso de variáveis como índices de arrays #
         N[i] = read(f"{i+1}º lado do quadrado: ")
 
         if i>0 ::

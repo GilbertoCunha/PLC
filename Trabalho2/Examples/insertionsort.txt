@@ -12,7 +12,7 @@ int i, j, vaux, v[10] = [-3, 4, 7, 21, 43, 6, 14, -33, 9, 0]
         write (f"{vaux} ")
     :;
 
-    # Ordenar o array
+    # Ordenar o array #
     for (i, 1, 10) ::
         for (j=i, j>0 and v[j-1]>v[j], j=j-1) ::
             fswap ()
