@@ -1,5 +1,7 @@
+
 # Declarações
 int a, b = 233 / 5, c = 20 + 4, d = read("Valor para d: ")
+int u[10], v[4] = [10, 20, 30, 40]
 
 # Definir funções auxiliares
 :: void faux1 ::
@@ -18,3 +20,4 @@ int a, b = 233 / 5, c = 20 + 4, d = read("Valor para d: ")
     ...
     faux2 ()
 :;
+

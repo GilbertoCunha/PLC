@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
+FILE="Man.txt"
 
 check() {
 	declare -n ref=$2
 	if [[ ($1 =~ debug=.+) ]] || [[ ($1 =~ verbose=.+) ]] || [[ ($1 =~ file=.+) ]] || [[ -z $1 ]]
 	then ref=$1
 	else	
-		echo ------------------------------------
-		echo Argument $3 -\> \"$1\" unrecognized.$'\n'The following arguments can be used:$'\n'-\> debug=yes$'\n'-\> verbose=yes$'\n'-\> file=FILENAME
-		echo ------------------------------------
+		echo ---------------------------------------
+		echo Argument $3 -\> \"$1\" unrecognized.$'\n'The following arguments can be used:$'\n'-\> debug=yes$'\n'-\> verbose=yes$'\n'-\> file=FILENAME$'\n'Single argument \"man\" can also be used.
+		echo ---------------------------------------
 	fi
 }
 
@@ -15,11 +16,12 @@ fst=""
 snd=""
 trd=""
 
-[[ -n $1 ]] && check $1 fst "1"
+[[ -n $1 ]] && [[ $1 != "man" ]] && check $1 fst "1"
 [[ -n $2 ]] && check $2 snd "2"
 [[ -n $3 ]] && check $3 trd "3"
 
 make compile $fst $snd $trd
+[[ $1 = "man" ]] && cat $FILE
 
 echo "╔╗ ╔═╗╔╗ ╦ ╦";
 echo "╠╩╗║ ║╠╩╗║║║";
