@@ -34,9 +34,6 @@ void yyerror (char *s);
 %token MAIN READ WRITE
 %token FSS
 
-%left '<' '>' '+' '-' '*' '/' '%' 
-%left AND OR NOT EQ NEQ GE LE
-
 %type <inst> main funcs declrs declr decllist singdecl list
 %type <inst> instrs instr atr read write cond cycle fcall
 %type <inst> par factor term expr lexpr arithm fstring string
@@ -55,8 +52,8 @@ endline : '\n' | ';' ;
 main : '|' MAIN '|' '|' instrs      { asprintf (&$$, "%s", $5); }
      ;
 
-funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, &fcount, "void"); }
-      | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, &fcount, "void"); }
+funcs : START VOID ID START instrs END funcs    { declrFunc (&$$, $3, $5, $7, &vars, "void"); }
+      | VOID ID START instrs END funcs          { declrFunc (&$$, $2, $4, $6, &vars, "void"); }
       | '\n' funcs                              { asprintf (&$$, "%s", $2); }
       | error endline                           { asprintf (&$$, "%s", ""); }
       |                                         { asprintf (&$$, "%s", ""); }
@@ -67,12 +64,12 @@ instrs : instrs instr   { asprintf (&$$, "%s%s", $1, $2); }
        |                { asprintf (&$$, "%s", ""); }
        ;
 
-instr : atr       { asprintf (&$$, "%s", $1); }
-      | write     { asprintf (&$$, "%s", $1); }
-      | cond      { asprintf (&$$, "%s", $1); }
-      | cycle     { asprintf (&$$, "%s", $1); }
-      | fcall     { asprintf (&$$, "%s", $1); }
-      | endline   { asprintf (&$$, "%s", ""); }
+instr : atr endline      { asprintf (&$$, "%s", $1); }
+      | write endline    { asprintf (&$$, "%s", $1); }
+      | cond endline     { asprintf (&$$, "%s", $1); }
+      | cycle endline    { asprintf (&$$, "%s", $1); }
+      | fcall endline    { asprintf (&$$, "%s", $1); }
+      | '\n'             { asprintf (&$$, "%s", ""); }
       ;
 
 fcall : ID '(' ')'            { funcCall (&$$, $1, &vars); }
@@ -89,10 +86,10 @@ cond : IF expr START instrs END                          { ifInstr (&$$, $2, $4,
      | IF expr START instrs START ELSE cond              { ifElseif (&$$, $2, $4, $7, &fcount); }
      ;
 
-write : WRITE '(' string ')' endline   { asprintf (&$$, "%s", $3); }
+write : WRITE '(' string ')'   { asprintf (&$$, "%s", $3); }
       ;
 
-read : READ '(' string ')' endline     { asprintf (&$$, "%s", $3); }
+read : READ '(' string ')'     { asprintf (&$$, "%sread\natoi\n", $3); }
      ;
 
 string : FSS fstring '"'    { asprintf (&$$, "%s", $2); }
@@ -113,12 +110,12 @@ atr : ID '=' expr                 { exprAtr (&$$, $1, $3, &vars); }
     ;
 
 declrs : declrs declr    { asprintf (&$$, "%s%s", $1, $2); }
-       | error endline   { asprintf (&$$, "%s",""); }
+       | error endline   { asprintf (&$$, "%s", ""); }
        |                 { asprintf (&$$, "%s", ""); }
        ;
 
-declr : INT decllist endline  { asprintf (&$$, "%s", $2); }
-      | '\n'                  { asprintf (&$$, "%s", ""); }
+declr : INT decllist endline       { asprintf (&$$, "%s", $2); }
+      | '\n'                       { asprintf (&$$, "%s", ""); }
       ;
 
 decllist : singdecl ',' decllist   { asprintf (&$$, "%s%s", $1, $3); }

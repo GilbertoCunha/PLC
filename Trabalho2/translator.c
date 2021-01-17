@@ -41,7 +41,7 @@ void readAtr (char **r, char *id, char *instr, AVLTree *vars) {
     int sp, size;
     char *class, *type;
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "variable");
-    else if (strcmp (class, "var")==0) asprintf (r, "%sread\natoi\nstoreg %d\n", instr, sp);
+    else if (strcmp (class, "var")==0) asprintf (r, "%s\nstoreg %d\n", instr, sp);
     else if (strcmp (class, "array")==0) assignIntArray (r, id);
     else if (strcmp (class, "func")==0) assignFunc (r, id);
 }
@@ -52,7 +52,7 @@ void readArrayAtr (char **r, char *id, char *instr1, char *instr2, AVLTree *vars
     if (!searchAVL (*vars, id, &class, &type, &size, &sp)) notDeclared (r, id, "array");
     else if (strcmp (class, "array")==0) {
         char *error_str = outOfRange (id, instr1, size, count, line);
-        asprintf (r, "%spushgp\npushi %d\npadd\n%s%sread\natoi\nstoren\n", error_str, sp, instr2, instr1);
+        asprintf (r, "%spushgp\npushi %d\npadd\n%s%s\nstoren\n", error_str, sp, instr2, instr1);
     }
     else if (strcmp (class, "var")==0) intIndex (r, id);
     else if (strcmp (class, "func")==0) assignFunc (r, id);
@@ -71,6 +71,7 @@ void declaration (char **r, char *id, int *count, AVLTree *vars) {
 void declrArray (char **r, char *id, char *index, char *count, AVLTree *vars) {
     char *class, *type; int size, sp;
     if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
+    else if (index <= 0) myyyerror (r, "Array size must be a natural number.");
     else {
         insertAVL (vars, id, "array", "int", index, *count);
         asprintf (r, "pushn %d\n", index);
@@ -93,7 +94,7 @@ void declrRead (char **r, char *id, char *instr, AVLTree *vars, int *count) {
     if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
     else {
         insertAVL (vars, id, "var", "int", 1, *count);
-        asprintf (r, "%spushn 1\nread\natoi\nstoreg %d\n", instr, *count);
+        asprintf (r, "pushn 1\n%sstoreg %d\n", instr, *count);
         *count = *count + 1;
     }
 }
@@ -112,14 +113,13 @@ void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *co
     *size = 0;
 }
 
-void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count, char *ftype) {
+void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, char *ftype) {
     char *class, *type; int size, sp;
     if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
     else {
-        insertAVL (vars, id, "func", ftype, 1, *count);
+        insertAVL (vars, id, "func", ftype, 1, -1);
         if (strcmp (ftype, "void")==0) asprintf (r, "\n%s:\nnop\n%sreturn\n%s", id, instrs1, instrs2);
         else if (strcmp (ftype, "int")==0) asprintf (r, "\n%s:\nnop\n%sstorel -1\nreturn\n%s", id, instrs1, instrs2);
-        *count = *count + 1;
     }
 }
 
