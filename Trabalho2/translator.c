@@ -113,13 +113,14 @@ void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *co
     *size = 0;
 }
 
-void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, char *ftype) {
+void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count, char *ftype) {
     char *class, *type; int size, sp;
     if (searchAVL (*vars, id, &class, &type, &size, &sp)) reDeclaration (r, id);
     else {
-        insertAVL (vars, id, "func", ftype, 1, -1);
+        insertAVL (vars, id, "func", ftype, 1, *count);
         if (strcmp (ftype, "void")==0) asprintf (r, "\n%s:\nnop\n%sreturn\n%s", id, instrs1, instrs2);
         else if (strcmp (ftype, "int")==0) asprintf (r, "\n%s:\nnop\n%sstorel -1\nreturn\n%s", id, instrs1, instrs2);
+        *count = *count + 1;
     }
 }
 

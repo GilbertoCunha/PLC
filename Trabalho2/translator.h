@@ -20,7 +20,7 @@ void declrArray (char **r, char *id, char *index, char *count, AVLTree *vars);
 void declrExpr (char **r, char *id, char *expr, AVLTree *vars, int *count);
 void declrRead (char **r, char *id, char *instr, AVLTree *vars, int *count);
 void decList (char **r, char *id, int index, char *instr, AVLTree *vars, int *count, int *size);
-void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, char *ftype);
+void declrFunc (char **r, char *id, char *instrs1, char *instrs2, AVLTree *vars, int *count, char *ftype);
 void factorId (char **r, char *id, AVLTree *vars);
 void factorArray (char **r, char *id, char *instr, AVLTree *vars, int *count, int line);
 void negfactorId (char **r, char *id, AVLTree *vars);
