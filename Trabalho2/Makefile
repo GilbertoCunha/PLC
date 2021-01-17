@@ -25,4 +25,4 @@ clean:
 	@rm *.vm
 
 man: 
-	@more "AuxiliaryFiles/Man.txt"
+	@more "Man.txt"

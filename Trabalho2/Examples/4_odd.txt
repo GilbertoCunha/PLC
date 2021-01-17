@@ -1,10 +1,15 @@
-int i, count
+int i, v, count
 int seq[5] = [1, 10, 7, 6, 3]
 
 || main ||
+    write ("Array: ")
+    for (i, v) -> seq ::
+        write (f"{v} ")
+    :;
+    write ("\n")
     for (i, 0, 5) ::
         if seq[i]%2 == 1 ::
-            write(f"O {i}º elemento do array (com valor {seq[i]}) é ímpar\n")
+            write(f"O {i+1}º elemento do array (com valor {seq[i]}) é ímpar\n")
             count = count + 1
         :;
     :;

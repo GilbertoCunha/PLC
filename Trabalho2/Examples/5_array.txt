@@ -1,7 +1,18 @@
-int i, u, v[5] = [1, 2, 3, 4, 5]
+int i, u, v[5]
 
 || main ||
-    for (i, u) -> v ::
-        write (f"index: {i} | value: {u}")
+    for (i, 0, 5) ::
+        v[i] = read (f"Insira o {i+1}º elemento do array: ")
+        write (f"{v[i]}\n")
     :;
+    write ("Array:        : ")
+    for (i, u) -> v ::
+        write (f"{u} ")
+    :;
+    write ("\n")
+    write ("Inverted array: ")
+    for (i, 4, -1, -1) ::
+        write (f"{v[i]} ")
+    :;
+    write ("\n")
 :;
