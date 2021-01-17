@@ -20,9 +20,16 @@ trd=""
 [[ -n $2 ]] && check $2 snd "2"
 [[ -n $3 ]] && check $3 trd "3"
 
-make compile $fst $snd $trd
-[[ $1 = "man" ]] && cat $FILE
+if [[ $1 = "man" ]]
+then 
+	echo "╦ ╦╔═╗╦  ╔═╗╔═╗╔╦╗╔═╗  ╔╦╗╔═╗  ╔╗ ╔═╗╔╗ ╦ ╦";
+	echo "║║║║╣ ║  ║  ║ ║║║║║╣    ║ ║ ║  ╠╩╗║ ║╠╩╗║║║";
+	echo "╚╩╝╚═╝╩═╝╚═╝╚═╝╩ ╩╚═╝   ╩ ╚═╝  ╚═╝╚═╝╚═╝╚╩╝";
+	cat "Man.txt"
+else 
+	echo "╔╗ ╔═╗╔╗ ╦ ╦";
+	echo "╠╩╗║ ║╠╩╗║║║";
+	echo "╚═╝╚═╝╚═╝╚╩╝";
+fi
 
-echo "╔╗ ╔═╗╔╗ ╦ ╦";
-echo "╠╩╗║ ║╠╩╗║║║";
-echo "╚═╝╚═╝╚═╝╚╩╝";
+make compile $fst $snd $trd

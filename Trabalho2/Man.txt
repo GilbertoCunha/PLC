@@ -1,23 +1,39 @@
 
-# Declarações
+####################### Declarações #######################
 int a, b = 233 / 5, c = 20 + 4, d = read("Valor para d: ")
-int u[10], v[4] = [10, 20, 30, 40]
+int u[10], arr[4] = [10, 20, 30, 40]
 
-# Definir funções auxiliares
-:: void faux1 ::
-    ...
+################### Funções auxiliares ####################
+:: void faux ::
+    # Ciclos #
+    for (i, Start, End, Step) ::
+        ...
+    :;
+
+    for (i=0, i <= N, i=i+1) ::
+        ...
+    :;
+
+    for (i, v) -> arr ::
+        ...
+    :;
+    
+    # Condicionais #
+    if 2 * (b / 4 - 2) and (a != 0 or c <= 3) ::
+        ...
+    :: else ::
+        ...
+    :;
 :;
 
-:: void faux2 ::
-    ...
-:;
-
-# Definir a main
+########################## Main ###########################
 || main ||
     ...
-    # Chamada à função faux1, o seu código vai ser executado
-    faux1 ()
-    ...
-    faux2 ()
+    
+    # Chamada à função faux, o seu código será executado #
+    faux ()
+
+    # Fstrings #
+    write (f"Valor de a: {a}")
 :;
 
