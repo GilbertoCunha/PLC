@@ -136,24 +136,6 @@ int isBSTree (AVLTree a) {
     return r;
 }
 
-int searchAVLsp (AVLTree a, char *key, int *x) {
-    int r = -2;
-    if (a == NULL) r = -1;
-    else if (strcmp (key, a->key) < 0) r = searchAVLsp (a->left, key, x);
-    else if (strcmp (key, a->key) > 0) r = searchAVLsp (a->right, key, x);
-    else *x = a->sp;
-    return r;
-}
-
-int searchAVLsize (AVLTree a, char *key, int *x) {
-    int r = 1;
-    if (a == NULL) r = 0;
-    else if (strcmp (key, a->key) < 0) r = searchAVLsize (a->left, key, x);
-    else if (strcmp (key, a->key) > 0) r = searchAVLsize (a->right, key, x);
-    else *x = a->size;
-    return r;
-}
-
 int searchAVL (AVLTree a, char *key, char **class, char **type, int *size, int *sp) {
     int r = 1;
     if (a == NULL) r = 0;

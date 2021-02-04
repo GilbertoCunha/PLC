@@ -177,7 +177,7 @@ factor : NUM                    { asprintf (&$$, "pushi %d\n", $1); }
 
 void yyerror (char *s) {
     if (!ERROR) printf ("\n%s\n", repeatChar ('-', 90));
-    fprintf (stderr,"Line: %d | Error: %s\n", yylineno, s);
+    fprintf (stderr,"Line %d: %s\n", yylineno, s);
     printf ("%s\n", repeatChar ('-', 90));
     ERROR = 1;
 }

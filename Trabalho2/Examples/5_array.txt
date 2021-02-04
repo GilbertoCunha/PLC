@@ -3,7 +3,6 @@ int i, u, v[5]
 || main ||
     for (i, 0, 5) ::
         v[i] = read (f"Insira o {i+1}º elemento do array: ")
-        write (f"{v[i]}\n")
     :;
     write ("Array:        : ")
     for (i, u) -> v ::
